@@ -6,13 +6,13 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 2;
+mode = 1;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
 %basefolder = "~/project/cells46/";
 %basefolder = "~/project/test/";
-basefolder = "~/project/test_parallel/";
+basefolder = "~/project/test_/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
 all_mean_cal_A = [];
@@ -94,12 +94,8 @@ for t_index_i =0:9
     lengthscale = csvread(length_file);
     cal_A_file = folder + "calA" + extend1;
     cal_A = csvread(cal_A_file);
-    try
-        contact_file = folder + "contact" + extend1;
-        contact = dlmread(contact_file);
-    catch
-        disp('no contact file')
-    end
+    contact_file = folder + "contact" + extend1;
+    contact = dlmread(contact_file);
     v_file = folder + "v" + extend1;
     vel = csvread(v_file);
     
