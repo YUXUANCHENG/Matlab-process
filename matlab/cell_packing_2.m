@@ -6,13 +6,13 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 2;
+mode = 1;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
 %basefolder = "~/project/cells46/";
-%basefolder = "~/project/test/";
-basefolder = "~/project/test_parallel/";
+basefolder = "~/project/test/";
+%basefolder = "~/project/cells47/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
 all_mean_cal_A = [];
@@ -122,10 +122,11 @@ for t_index_i =0:9
     Ncell = size(lengthscale,1)-2;
 
 
-%     vobj = VideoWriter('test.mp4','MPEG-4');
-%     vobj.FrameRate = 10;
+%     %vobj = VideoWriter('test.mp4','MPEG-4');
+%     vobj = VideoWriter('test1.avi');
+%     vobj.FrameRate = 3;
 %     open(vobj);
-%         for i = 1 :  round(frames/100):frames
+%         for i = 1 :  round(frames/50):frames
 %             start_point = 1 + N * ( i - 1 );
 %             end_point = N * i;
 %             plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
@@ -304,12 +305,13 @@ end
 figure(7), clf, hold on, box on;
 % plot curve, add units to axes, etc
 %deltaT = deltaT * 1/0.005;
-plot(deltaT, msd{1,1},'color','red','linewidth',3);
-plot(deltaT, msd{3,1},'color','green','linewidth',3);
-plot(deltaT, msd{10,1},'color','black','linewidth',3);
+plot(deltaT, msd{9,3},'color','red','linewidth',3);
+plot(deltaT, msd{9,6},'color','green','linewidth',3);
+plot(deltaT, msd{9,7},'color','black','linewidth',3);
+plot(deltaT, msd{9,10},'color','blue','linewidth',3);
 %plot(deltaT, msd{3,10},'color','blue','linewidth',3);
 %P = polyfit(log10(deltaT(round(5*frames/6): end)), log10(MSD(round(5*frames/6): end))', 1);
-MSD1=msd{3,1};
+MSD1=msd{9,10};
 P = polyfit(log10(deltaT(round(3*length_t/6): end)), log10(MSD1(round(3*length_t/6): end))', 1);
 yfit = P(1)*log10(deltaT)+P(2);
 plot(deltaT,10.^(yfit),'r-.');
