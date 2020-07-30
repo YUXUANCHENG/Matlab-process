@@ -6,12 +6,12 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 1;
+mode = 0;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-%basefolder = "~/project/cells46/";
-basefolder = "~/project/test/";
+basefolder = "~/project/cells26/";
+%basefolder = "~/project/test/";
 %basefolder = "~/project/cells47/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
@@ -184,7 +184,7 @@ for t_index_i =0:9
 %     histogram(test,10.^edges,'Normalization','countdensity')
 %     xlabel('time');ylabel('T1 rate');
 %     set(gca, 'xscale','log')
-    
+%     
 %     i = frames;
 %     
 %         vobj = VideoWriter('test.mp4','MPEG-4');
@@ -334,15 +334,15 @@ ax.YScale = "log";
 % ylabel("v0");
 % title("calA");
 
-all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
-figure(8);
-heatmap(flip(all_mean_cal_A,1))
-ax = gca;
-ax.XData = unique(v0(:,3));
-ax.YData = flip(unique(v0(:,1)));
-xlabel("calA0");
-ylabel("v0");
-title("calA");
+% all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
+% figure(8);
+% heatmap(flip(all_mean_cal_A,1))
+% ax = gca;
+% ax.XData = unique(v0(:,3));
+% ax.YData = flip(unique(v0(:,1)));
+% xlabel("calA0");
+% ylabel("v0");
+% title("calA");
 
 % ifjammed = reshape(ifjammed, [], 10);
 % figure(6);
@@ -364,6 +364,17 @@ ax.XData = unique(v0(:,3));
 ax.YData = flip(unique(v0(:,1)));
 xlabel("kb");
 ylabel("v0");
+title("Phase Diagram");
+
+all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
+figure(8);
+%heatmap(flip(ifjammed,1),'CellLabelColor','none')
+heatmap(flip(all_mean_cal_A,1))
+ax = gca;
+ax.XData = unique(v0(:,3));
+ax.YData = flip(unique(v0(:,1)));
+xlabel("kb");
+ylabel("CalA");
 title("Phase Diagram");
 
 % all_mean_cal_A = reshape(all_mean_cal_A, 10, []);
@@ -966,6 +977,7 @@ end
 % plot(kb,all_mean_cal_A)
 % xlabel('kb');ylabel('calA');
 
+% for ground shape
 % kb = unique(v0(:,3));
 % kl = unique(v0(:,4));
 % P = polyfit(log10(kl'),log10(1.12-all_mean_cal_A(3,:)),1)
@@ -982,5 +994,15 @@ end
 % ax.XScale = "log";
 % ax.YScale = "log";
 % xlabel('calA-1');ylabel('MSD');
+
+% figure(7);hold on
+% scatter(all_mean_cal_A(:),ifjammed(:))
+% P = polyfit(log10(all_mean_cal_A(:)), log10(ifjammed(:)), 1);
+% yfit = P(1)*log10(all_mean_cal_A(:))+P(2);
+% plot(all_mean_cal_A(:),10.^(yfit),'r-.');
+% ax = gca;
+% ax.XScale = "log";
+% ax.YScale = "log";
+% xlabel('calA');ylabel('MSD');
 
 
