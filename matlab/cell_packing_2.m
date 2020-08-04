@@ -6,12 +6,12 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 0;
+mode = 1;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells26/";
-%basefolder = "~/project/test/";
+%basefolder = "~/project/cells26/";
+basefolder = "~/project/test/";
 %basefolder = "~/project/cells47/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
@@ -248,6 +248,18 @@ for t_index_i =0:9
         disp({'voronoi_con_net is different for ',t_index_i,t_index_j})
     end
     
+    [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
+    deltaT = deltaT * (1/5000) * (100000/0.005);  
+    % open figure window
+    figure((t_index_j+1)*10+3), clf, hold on, box on;
+    % plot curve, add units to axes, etc
+    plot(deltaT, ISF,'color','red','linewidth',3);
+    xlabel('time');ylabel('MSD');
+    length_t = length(deltaT);
+    ax = gca;
+    ax.XScale = "log";
+    ax.YScale = "log";
+    
     v_d_index = t_index_i * 10 + t_index_j + 1;
     
 %     order = cal_order1(vel)/v0(v_d_index,1);
@@ -302,6 +314,18 @@ end
 % ylabel("noise");
 % title("order parameter");
 
+% figure(7), clf, hold on, box on;
+% plot(msd{9,3},'color','red','linewidth',3);
+% plot(msd{9,6},'color','green','linewidth',3);
+% plot(msd{9,7},'color','black','linewidth',3);
+% plot(msd{9,10},'color','blue','linewidth',3);
+% legend({'Liquid like','Solid like','fit'});
+% xlabel('time');ylabel('MSD');
+% ax = gca;
+% ax.FontSize = 22;
+% ax.XScale = "log";
+% ax.YScale = "log";
+
 figure(7), clf, hold on, box on;
 % plot curve, add units to axes, etc
 %deltaT = deltaT * 1/0.005;
@@ -343,7 +367,7 @@ ax.YScale = "log";
 % xlabel("calA0");
 % ylabel("v0");
 % title("calA");
-
+% 
 % ifjammed = reshape(ifjammed, [], 10);
 % figure(6);
 % %heatmap(flip(ifjammed,1),'CellLabelColor','none')
@@ -374,7 +398,7 @@ ax = gca;
 ax.XData = unique(v0(:,3));
 ax.YData = flip(unique(v0(:,1)));
 xlabel("kb");
-ylabel("CalA");
+ylabel("v0");
 title("Phase Diagram");
 
 % all_mean_cal_A = reshape(all_mean_cal_A, 10, []);
@@ -888,6 +912,50 @@ function [MSD,deltaT] = cal_msd(N, coordinate, frames, Ncell, lengthscale)
 
 end
 
+function [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale)
+
+
+    xcomp=zeros(frames,Ncell);
+    ycomp=zeros(frames,Ncell);
+    for i = 1 :frames
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        [xcomp_t,ycomp_t]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+        xcomp(i,:)= xcomp_t;
+        ycomp(i,:)= ycomp_t;
+    end
+    
+    
+    % create MSD array (y-axis of MSD plot)
+    ISF = zeros(round(9*frames/10),1);
+    NT = length(ISF);
+    q = sqrt(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
+    % loop over the different possible time windows, calculate MSD for each
+    % time window size
+    for ii = 1:NT
+
+        % calculate x displacements, separated by ii indices
+        dx = xcomp(1+ii:end,:) - xcomp(1:end-ii,:);
+
+        % calculate y displacements similarly
+        dy = ycomp(1+ii:end,:) - ycomp(1:end-ii,:);
+    
+        count = 0;
+        isf = 0;
+        for th = 0: 0.1: 2*3.141
+        % take mean over all displacements
+            isf = isf + mean(real(exp(sqrt(-1) * (cos(th)*q*dx + sin(th)*q*dy))),'all');
+            count = count + 1;
+        end
+        % store in MSD array
+        ISF(ii) = isf/count;
+    end
+
+    % create deltaT array, using a for loop or vectorization
+    deltaT = 1:NT;
+
+
+end
 
 function [std_n, mean_n] = giant_number(N, coordinate, frames, Ncell, lengthscale)
     xcomp=zeros(frames,Ncell);
@@ -986,14 +1054,15 @@ end
 % loglog(kb,1.12-all_mean_cal_A(:,3))
 
 % figure(7);hold on
-% scatter(all_mean_cal_A(:)-1,ifjammed(:))
-% P = polyfit(log10(all_mean_cal_A(:)-1), log10(ifjammed(:)), 1);
-% yfit = P(1)*log10(all_mean_cal_A(:)-1)+P(2);
-% plot(all_mean_cal_A(:)-1,10.^(yfit),'r-.');
+% offset = 1.08;
+% scatter(all_mean_cal_A(:)-offset,ifjammed(:))
+% P = polyfit(log10(all_mean_cal_A(:)-offset), log10(ifjammed(:)), 1);
+% yfit = P(1)*log10(all_mean_cal_A(:)-offset)+P(2);
+% plot(all_mean_cal_A(:)-offset,10.^(yfit),'r-.');
 % ax = gca;
 % ax.XScale = "log";
 % ax.YScale = "log";
-% xlabel('calA-1');ylabel('MSD');
+% xlabel('calA_m-calA_g');ylabel('MSD');
 
 % figure(7);hold on
 % scatter(all_mean_cal_A(:),ifjammed(:))
