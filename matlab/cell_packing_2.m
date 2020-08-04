@@ -21,6 +21,8 @@ ifjammed = [];
 mean_p = [];
 var_p = [];
 msd = {};
+ISF_en = {};
+tao_en = {};
 v0 = [];
 
 for t_index_i =0:9
@@ -249,6 +251,7 @@ for t_index_i =0:9
     end
     
     [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
+    logindex = round(logspace(0, log10(deltaT(end)),100));
     deltaT = deltaT * (1/5000) * (100000/0.005);  
     % open figure window
     figure((t_index_j+1)*10+3), clf, hold on, box on;
@@ -258,7 +261,14 @@ for t_index_i =0:9
     length_t = length(deltaT);
     ax = gca;
     ax.XScale = "log";
-    ax.YScale = "log";
+    ax.YScale = "Linear";
+    
+    fitfun = fittype( @(C, tao, b, x) C*exp(-(x/tao).^b));
+    fitted = fit( deltaT(logindex)', ISF(logindex), fitfun, 'StartPoint', [1,10^5,1]);
+    
+    ISF_en{t_index_i+1,t_index_j+1} = ISF;
+    tao_en{t_index_i+1,t_index_j+1} = fitted.tao;
+    
     
     v_d_index = t_index_i * 10 + t_index_j + 1;
     
