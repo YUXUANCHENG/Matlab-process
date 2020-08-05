@@ -11,8 +11,8 @@ mode = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
 %basefolder = "~/project/cells26/";
-basefolder = "~/project/test/";
-%basefolder = "~/project/cells47/";
+%basefolder = "~/project/test/";
+basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
 all_mean_cal_A = [];
@@ -43,6 +43,7 @@ for t_index_i =0:9
         v0_file = folder + "v0.txt";
         v0 = csvread(v0_file);
     end
+    v0 = unique(v0,'rows');
     %extend = "_jammed_" + int2str(t_index_i) + int2str(t_index_j) +".txt";
     extend = "_jammed_" + int2str(t_index_i) +".txt";
     %extend = ".txt";
@@ -256,18 +257,21 @@ for t_index_i =0:9
     % open figure window
     figure((t_index_j+1)*10+3), clf, hold on, box on;
     % plot curve, add units to axes, etc
-    plot(deltaT, ISF,'color','red','linewidth',3);
+    plot(deltaT(logindex), ISF(logindex),'color','red','linewidth',3);
     xlabel('time');ylabel('MSD');
     length_t = length(deltaT);
     ax = gca;
     ax.XScale = "log";
     ax.YScale = "Linear";
     
-    fitfun = fittype( @(C, tao, b, x) C*exp(-(x/tao).^b));
-    fitted = fit( deltaT(logindex)', ISF(logindex), fitfun, 'StartPoint', [1,10^5,1]);
+%     fitfun = fittype( @(C, tao, b, x) C*exp(-(x/tao).^b));
+%     fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [1,500,1]);
+%     
+    fitfun = fittype( @(tao, b, x) exp(-(x/tao).^b));
+    fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [500,1]);
     
     ISF_en{t_index_i+1,t_index_j+1} = ISF;
-    tao_en{t_index_i+1,t_index_j+1} = fitted.tao;
+    tao_en{t_index_i+1,t_index_j+1} = fitted.tao * (1/5000) * (100000/0.005);
     
     
     v_d_index = t_index_i * 10 + t_index_j + 1;
@@ -410,6 +414,14 @@ ax.YData = flip(unique(v0(:,1)));
 xlabel("kb");
 ylabel("v0");
 title("Phase Diagram");
+
+figure(9);
+scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,all_mean_cal_A(:),'filled');
+cb = colorbar();
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
 
 % all_mean_cal_A = reshape(all_mean_cal_A, 10, []);
 % figure(8);
@@ -940,9 +952,10 @@ function [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale)
     ISF = zeros(round(9*frames/10),1);
     NT = length(ISF);
     q = sqrt(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
+    logindex = round(logspace(0, log10(NT),100));
     % loop over the different possible time windows, calculate MSD for each
     % time window size
-    for ii = 1:NT
+    for ii = logindex
 
         % calculate x displacements, separated by ii indices
         dx = xcomp(1+ii:end,:) - xcomp(1:end-ii,:);
