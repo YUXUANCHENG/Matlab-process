@@ -251,13 +251,13 @@ for t_index_i =0:9
         disp({'voronoi_con_net is different for ',t_index_i,t_index_j})
     end
     
-    [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
+    [ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
     logindex = round(logspace(0, log10(deltaT(end)),100));
-    deltaT = deltaT * (1/5000) * (100000/0.005);  
+    deltaT1 = deltaT1 * (1/5000) * (100000/0.005);  
     % open figure window
     figure((t_index_j+1)*10+3), clf, hold on, box on;
     % plot curve, add units to axes, etc
-    plot(deltaT(logindex), ISF(logindex),'color','red','linewidth',3);
+    plot(deltaT1(logindex), ISF(logindex),'color','red','linewidth',3);
     xlabel('time');ylabel('MSD');
     length_t = length(deltaT);
     ax = gca;
@@ -361,6 +361,19 @@ ax = gca;
 ax.FontSize = 22;
 ax.XScale = "log";
 ax.YScale = "log";
+
+figure(200), clf, hold on, box on;
+% plot curve, add units to axes, etc
+%deltaT = deltaT * 1/0.005;
+plot(deltaT(logindex), ISF_en{7,1}(logindex),'color','red','linewidth',3);
+plot(deltaT(logindex), ISF_en{7,3}(logindex),'color','green','linewidth',3);
+plot(deltaT(logindex), ISF_en{7,6}(logindex),'color','black','linewidth',3);
+plot(deltaT(logindex), ISF_en{7,10}(logindex),'color','blue','linewidth',3);
+xlabel('time');ylabel('ISF');
+ax = gca;
+ax.FontSize = 22;
+ax.XScale = "log";
+% ax.YScale = "log";
 
 % all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
 % figure(8);
