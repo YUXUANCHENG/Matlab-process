@@ -6,13 +6,14 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 1;
+mode = 2;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
 %basefolder = "~/project/cells26/";
-%basefolder = "~/project/test/";
-basefolder = "~/project/cells48/";
+% basefolder = "~/project/test/";
+basefolder = "~/scratch60/cells47/";
+%basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
 all_mean_cal_A = [];
@@ -252,7 +253,7 @@ for t_index_i =0:9
     end
     
     [ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
-    logindex = round(logspace(0, log10(deltaT(end)),100));
+    logindex = unique(round(logspace(0, log10(deltaT1(end)),100)));
     deltaT1 = deltaT1 * (1/5000) * (100000/0.005);  
     % open figure window
     figure((t_index_j+1)*10+3), clf, hold on, box on;
@@ -429,8 +430,23 @@ ylabel("v0");
 title("Phase Diagram");
 
 figure(9);
-scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,all_mean_cal_A(:),'filled');
+all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
+re = all_mean_cal_A';
+scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,re(:),'filled');
 cb = colorbar();
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
+
+figure(9); hold on
+re = all_mean_cal_A';
+for i = 1:10
+    plot(1./(v0(i:10:end,1).^2),[tao_en{i,:}].*v0(i:10:end,1)','color','blue');
+end
+scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,re(:),'filled');
+cb = colorbar();
+%xlim([-inf, 10^4]);
 ax = gca;
 ax.XScale = "log";
 ax.YScale = "log";
@@ -965,7 +981,7 @@ function [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale)
     ISF = zeros(round(9*frames/10),1);
     NT = length(ISF);
     q = sqrt(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
-    logindex = round(logspace(0, log10(NT),100));
+    logindex = unique(round(logspace(0, log10(NT),100)));
     % loop over the different possible time windows, calculate MSD for each
     % time window size
     for ii = logindex
