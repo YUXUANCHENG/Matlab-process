@@ -6,13 +6,13 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 2;
+mode = 1;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
 %basefolder = "~/project/cells26/";
-% basefolder = "~/project/test/";
-basefolder = "~/scratch60/cells47/";
+basefolder = "~/project/test/";
+%basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
 
@@ -24,9 +24,12 @@ var_p = [];
 msd = {};
 ISF_en = {};
 tao_en = {};
+T1_cells_list = {};
 v0 = [];
 
-for t_index_i =0:9
+time_scale = (1/5000) * (100000/0.005);
+
+for t_index_i =5:9
     %close all
     for t_index_j = 0:9
     try
@@ -159,35 +162,42 @@ for t_index_i =0:9
 %     end
 %     
 
-%     T1_count = zeros(1, frames);
-%     for i = 1 : frames-1
-%         start_point = 1 + N * ( i - 1 );
-%         end_point = N * i;
-%         xpos_at_frame = coordinate(start_point:end_point,1);
-%         ypos_at_frame = coordinate(start_point:end_point,2);
-%         start_point = 1 + N * ( i );
-%         end_point = N * (i+1);
-%         xpos_at_next_frame = coordinate(start_point:end_point,1);
-%         ypos_at_next_frame = coordinate(start_point:end_point,2);
-%         %T1_count(1,i+1) = T1_swap_1(xpos_at_frame, ypos_at_frame,xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, (t_index_j+1)*10+1);
-%         T1_count(1,i+1) = T1_swap_2(xpos_at_frame, ypos_at_frame,xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, i,(t_index_j+1)*10+1);
-%     end
-%     
-%     figure((t_index_j+1)*10+5), clf, hold on, box on;
-%     n = 100; % average every n values
-%     %T1_count = arrayfun(@(i) mean(T1_count(i:i+n-1)),1:n:length(T1_count)-n+1)'; % the averaged vector
-%     plot((1:length(T1_count))* (1/5000) * (100000/0.005),T1_count);
-%     xlabel('time');ylabel('T1');
-%     ax = gca;
-%     ax.XScale = "log";
-%     hold off;
-%     %sum(T1_count)/(frames *(1/5000) * (100000/0.005))
-%     figure((t_index_j+1)*10+6)
-%     test = find(T1_count>0) * (1/5000) * (100000/0.005);
-%     [count,edges] = histcounts(log10(test));
-%     histogram(test,10.^edges,'Normalization','countdensity')
-%     xlabel('time');ylabel('T1 rate');
-%     set(gca, 'xscale','log')
+    T1_count = zeros(1, frames);
+    for i = 1 : frames-1
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        xpos_at_frame = coordinate(start_point:end_point,1);
+        ypos_at_frame = coordinate(start_point:end_point,2);
+        start_point = 1 + N * ( i );
+        end_point = N * (i+1);
+        xpos_at_next_frame = coordinate(start_point:end_point,1);
+        ypos_at_next_frame = coordinate(start_point:end_point,2);
+        %T1_count(1,i+1) = T1_swap_1(xpos_at_frame, ypos_at_frame, ...
+        %xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, ...
+        %(t_index_j+1)*10+1);
+        %% 1 for rate, 2 for cumulated T1, 3 for cell fraction
+        T1_count(1,i+1) = T1_swap_2(xpos_at_frame, ypos_at_frame, ...
+        xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, i, ...
+        (t_index_j+1)*10+1,2);
+    end
+    
+    T1_cells_list{t_index_i+1,t_index_j+1} = T1_count;
+    
+    figure((t_index_j+1)*10+5), clf, hold on, box on;
+    n = 100; % average every n values
+    %T1_count = arrayfun(@(i) mean(T1_count(i:i+n-1)),1:n:length(T1_count)-n+1)'; % the averaged vector
+    plot((1:length(T1_count))* time_scale,T1_count);
+    xlabel('time');ylabel('T1');
+    ax = gca;
+    ax.XScale = "log";
+    hold off;
+    %sum(T1_count)/(frames *(1/5000) * (100000/0.005))
+    figure((t_index_j+1)*10+6)
+    test = find(T1_count>0) * (1/5000) * (100000/0.005);
+    [count,edges] = histcounts(log10(test));
+    histogram(test,10.^edges,'Normalization','countdensity')
+    xlabel('time');ylabel('T1 rate');
+    set(gca, 'xscale','log')
 %     
 %     i = frames;
 %     
@@ -222,7 +232,7 @@ for t_index_i =0:9
     
     [MSD,deltaT] = cal_msd(N, coordinate, frames, Ncell, lengthscale);
     %[MSD,deltaT] = cal_msd_vertex(N, coordinate, frames);
-    deltaT = deltaT * (1/5000) * (100000/0.005);
+    deltaT = deltaT * time_scale;
     
     % open figure window
     figure((t_index_j+1)*10+2), clf, hold on, box on;
@@ -254,7 +264,7 @@ for t_index_i =0:9
     
     [ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
     logindex = unique(round(logspace(0, log10(deltaT1(end)),100)));
-    deltaT1 = deltaT1 * (1/5000) * (100000/0.005);  
+    deltaT1 = deltaT1 * time_scale;  
     % open figure window
     figure((t_index_j+1)*10+3), clf, hold on, box on;
     % plot curve, add units to axes, etc
@@ -375,6 +385,21 @@ ax = gca;
 ax.FontSize = 22;
 ax.XScale = "log";
 % ax.YScale = "log";
+
+figure(201), clf, hold on, box on;
+% plot curve, add units to axes, etc
+deltaT1 = (1:length(T1_count))* time_scale;
+% for i = 1 : 10
+%     plot(deltaT1, T1_cells_list{6,i});
+% end
+plot(deltaT1, T1_cells_list{6,1},'color','red');
+plot(deltaT1, T1_cells_list{6,5},'color','green');
+plot(deltaT1, T1_cells_list{6,6},'color','black');
+plot(deltaT1, T1_cells_list{6,10},'color','blue');
+xlabel('time');ylabel('T1');
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
 
 % all_mean_cal_A = reshape(all_mean_cal_A, [], 10);
 % figure(8);
@@ -665,7 +690,7 @@ function count = T1_swap_1(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypo
     count = ceil(count / 4);
 end
 
-function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypos_at_next_frame, Ncell, lengthscale, frame_i, fig)
+function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypos_at_next_frame, Ncell, lengthscale, frame_i, fig, mode)
     global T1_cells;
     global T1_index;
     global T1_count;
@@ -725,14 +750,17 @@ function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypo
 %             cell_list = [cell_list, mod(i-1,Ncell)];
 %         end
 %     end
+
+    % get cells involved in T1 
     for i = 1 : Ncell
         if ~isequal(voronoi_con_net{i}, voronoi_con_net_next{i})
             count = count + 1;
             cell_list = [cell_list, mod(i-1,Ncell)];
         end
     end
-    
+   
     if (count >0)
+        % record the contact difference for each cell
         differ_list = {};
         for i = 1 : length(cell_list)
             diff = setdiff(voronoi_con_net{cell_list(i)+1},voronoi_con_net_next{cell_list(i)+1});
@@ -745,6 +773,8 @@ function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypo
             if length(differ_list{i}) ==1
                 T1_sub_list = [cell_list(i)];
                 for j = 1 : length(cell_list)
+                    % if j is connected to i and the cell which i lost
+                    % contact with, then it must be part of T1
                     if ismember(cell_list(j)+1,voronoi_con_net_next{cell_list(i)+1})&&ismember(cell_list(j)+1,voronoi_con_net_next{differ_list{i}+1})
                         T1_sub_list = [T1_sub_list, cell_list(j)];
                     end
@@ -766,10 +796,14 @@ function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypo
                 T1_cells = [T1_cells; T1_list(i,:)];
                 T1_index = [T1_index; frame_i+1];
             else
+                % if this is a reverse T1
                 [logi,loca]= ismember(T1_list(i,:), T1_cells, 'row');
                 if logi
                     count = count - 1;
-                    T1_count(T1_index(loca)) = T1_count(T1_index(loca)) - 1;
+                    % if recording T1 rate
+                    if mode==1
+                      T1_count(T1_index(loca)) = T1_count(T1_index(loca)) - 1;
+                    end
                     T1_cells(loca,:) = [];
                     T1_index(loca,:) = [];
                 else
@@ -806,6 +840,137 @@ function count = T1_swap_2(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypo
 %         hold off
 %      end
 %     end
+    % if recording number of cumulated T1
+    if mode==2
+        count = size(T1_cells,1);
+    % if recording fraction of cells involved
+    elseif mode ==3
+        count = size(unique(T1_cells),1)/Ncell;
+    end
+end
+
+
+function count = T1_swap_3(xpos_at_frame, ypos_at_frame, xpos_at_next_frame, ypos_at_next_frame, Ncell, lengthscale, frame_i, fig)
+    global T1_cells;
+    global T1_index;
+    global T1_count;
+    count = 0;
+    xcomp = zeros(1,Ncell);
+    ycomp = zeros(1,Ncell);
+    for ci = 1:Ncell
+        index = sum(lengthscale(1:ci),'all');
+        start_point_last = 1 + index - lengthscale(ci);
+        end_point_last = index;
+        cx_tmp = mean(xpos_at_frame(start_point_last:end_point_last),'all');
+        cy_tmp = mean(ypos_at_frame(start_point_last:end_point_last),'all');
+        xcomp(ci) = mod(cx_tmp,lengthscale(end-1));
+        ycomp(ci) = mod(cy_tmp,lengthscale(end));
+    end
+    voronoiX = [];
+    voronoiY = [];
+    for i = -1:1
+        for j = -1:1
+            voronoiX = [voronoiX,xcomp + lengthscale(end-1) * i];
+            voronoiY = [voronoiY,ycomp + lengthscale(end)* j];
+        end
+    end
+
+    dt = delaunayTriangulation(voronoiX',voronoiY');
+    [vAll,cAll] = voronoiDiagram(dt);
+    voronoi_con_net = voronoi_contact(cAll, Ncell);
+    
+    xcomp = zeros(1,Ncell);
+    ycomp = zeros(1,Ncell);
+    for ci = 1:Ncell
+        index = sum(lengthscale(1:ci),'all');
+        start_point_last = 1 + index - lengthscale(ci);
+        end_point_last = index;
+        cx_tmp = mean(xpos_at_next_frame(start_point_last:end_point_last),'all');
+        cy_tmp = mean(ypos_at_next_frame(start_point_last:end_point_last),'all');
+        xcomp(ci) = mod(cx_tmp,lengthscale(end-1));
+        ycomp(ci) = mod(cy_tmp,lengthscale(end));
+    end
+    voronoiX_n = [];
+    voronoiY_n = [];
+    for i = -1:1
+        for j = -1:1
+            voronoiX_n = [voronoiX_n,xcomp + lengthscale(end-1) * i];
+            voronoiY_n = [voronoiY_n,ycomp + lengthscale(end)* j];
+        end
+    end
+
+    dt = delaunayTriangulation(voronoiX_n',voronoiY_n');
+    [vAll_next,cAll_next] = voronoiDiagram(dt);
+    voronoi_con_net_next = voronoi_contact(cAll_next, Ncell);
+    
+    cell_list = [];
+%     for i = (1 + 4 * Ncell) : (5 * Ncell)
+%         if length(cAll{i})~=length(cAll_next{i})
+%             count = count + 1;
+%             cell_list = [cell_list, mod(i-1,Ncell)];
+%         end
+%     end
+
+    % get cells involved in T1 
+    for i = 1 : Ncell
+        if ~isequal(voronoi_con_net{i}, voronoi_con_net_next{i})
+            count = count + 1;
+            cell_list = [cell_list, mod(i-1,Ncell)];
+        end
+    end
+   
+    if (count >0)
+        % record the contact difference for each cell
+        differ_list = {};
+        for i = 1 : length(cell_list)
+            diff = setdiff(voronoi_con_net{cell_list(i)+1},voronoi_con_net_next{cell_list(i)+1});
+            diff = [diff, setdiff(voronoi_con_net_next{cell_list(i)+1},voronoi_con_net{cell_list(i)+1})];
+            differ_list{i} =  diff-1; 
+        end
+
+        T1_list = [];
+        for i = 1 : length(cell_list)
+            if length(differ_list{i}) ==1
+                T1_sub_list = [cell_list(i)];
+                for j = 1 : length(cell_list)
+                    % if j is connected to i and the cell which i lost
+                    % contact with, then it must be part of T1
+                    if ismember(cell_list(j)+1,voronoi_con_net_next{cell_list(i)+1})&&ismember(cell_list(j)+1,voronoi_con_net_next{differ_list{i}+1})
+                        T1_sub_list = [T1_sub_list, cell_list(j)];
+                    end
+                end
+                T1_sub_list = [T1_sub_list,differ_list{i}];
+                T1_sub_list = unique(T1_sub_list);
+                if length(T1_sub_list) == 4
+                    T1_list = [T1_list; T1_sub_list];
+                end
+                
+            end
+        end
+
+        T1_list = unique(T1_list,'rows');
+        count = size(T1_list,1);
+
+        for i = 1: size(T1_list,1)
+            if isempty(T1_index)
+                T1_cells = [T1_cells; T1_list(i,:)];
+                T1_index = [T1_index; frame_i+1];
+            else
+                % if this is a reverse T1
+                [logi,loca]= ismember(T1_list(i,:), T1_cells, 'row');
+                if logi
+                    count = count - 1;
+                    %T1_count(T1_index(loca)) = T1_count(T1_index(loca)) - 1;
+                    T1_cells(loca,:) = [];
+                    T1_index(loca,:) = [];
+                else
+                    T1_cells = [T1_cells; T1_list(i,:)];
+                    T1_index = [T1_index; frame_i+1];
+                end
+            end
+        end
+    end
+    count = size(T1_cells,1);
 end
 
 function voronoi_con_net = voronoi_contact(cAll, Ncell)
