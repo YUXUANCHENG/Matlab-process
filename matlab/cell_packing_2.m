@@ -10,8 +10,8 @@ mode = 1;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-%basefolder = "~/project/cells26/";
-basefolder = "~/project/test/";
+basefolder = "~/project/cells49/";
+%basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
@@ -26,10 +26,11 @@ ISF_en = {};
 tao_en = {};
 T1_cells_list = {};
 v0 = [];
+v0_en = {};
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =5:9
+for t_index_i =0:9
     %close all
     for t_index_j = 0:9
     try
@@ -37,10 +38,14 @@ for t_index_i =5:9
     if(mode==1)
         folder = basefolder + int2str(t_index_i) + "/";
         v0_file = folder + "v0.txt";
+        tmp = csvread(v0_file);
+        v0_en{t_index_i+1,t_index_j+1} = tmp(t_index_j+1,:);
         v0 = [v0;csvread(v0_file)];
     elseif(mode==2)
         folder = basefolder + int2str(t_index_i) + "_" + int2str(t_index_j) + "/";
         v0_file = folder + "v0.txt";
+        tmp = csvread(v0_file);
+        v0_en{t_index_i+1,t_index_j+1} = tmp;
         v0 = [v0;csvread(v0_file)];
     elseif(mode==0)
         folder = basefolder;
@@ -162,42 +167,42 @@ for t_index_i =5:9
 %     end
 %     
 
-    T1_count = zeros(1, frames);
-    for i = 1 : frames-1
-        start_point = 1 + N * ( i - 1 );
-        end_point = N * i;
-        xpos_at_frame = coordinate(start_point:end_point,1);
-        ypos_at_frame = coordinate(start_point:end_point,2);
-        start_point = 1 + N * ( i );
-        end_point = N * (i+1);
-        xpos_at_next_frame = coordinate(start_point:end_point,1);
-        ypos_at_next_frame = coordinate(start_point:end_point,2);
-        %T1_count(1,i+1) = T1_swap_1(xpos_at_frame, ypos_at_frame, ...
-        %xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, ...
-        %(t_index_j+1)*10+1);
-        %% 1 for rate, 2 for cumulated T1, 3 for cell fraction
-        T1_count(1,i+1) = T1_swap_2(xpos_at_frame, ypos_at_frame, ...
-        xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, i, ...
-        (t_index_j+1)*10+1,2);
-    end
-    
-    T1_cells_list{t_index_i+1,t_index_j+1} = T1_count;
-    
-    figure((t_index_j+1)*10+5), clf, hold on, box on;
-    n = 100; % average every n values
-    %T1_count = arrayfun(@(i) mean(T1_count(i:i+n-1)),1:n:length(T1_count)-n+1)'; % the averaged vector
-    plot((1:length(T1_count))* time_scale,T1_count);
-    xlabel('time');ylabel('T1');
-    ax = gca;
-    ax.XScale = "log";
-    hold off;
-    %sum(T1_count)/(frames *(1/5000) * (100000/0.005))
-    figure((t_index_j+1)*10+6)
-    test = find(T1_count>0) * (1/5000) * (100000/0.005);
-    [count,edges] = histcounts(log10(test));
-    histogram(test,10.^edges,'Normalization','countdensity')
-    xlabel('time');ylabel('T1 rate');
-    set(gca, 'xscale','log')
+%     T1_count = zeros(1, frames);
+%     for i = 1 : frames-1
+%         start_point = 1 + N * ( i - 1 );
+%         end_point = N * i;
+%         xpos_at_frame = coordinate(start_point:end_point,1);
+%         ypos_at_frame = coordinate(start_point:end_point,2);
+%         start_point = 1 + N * ( i );
+%         end_point = N * (i+1);
+%         xpos_at_next_frame = coordinate(start_point:end_point,1);
+%         ypos_at_next_frame = coordinate(start_point:end_point,2);
+%         %T1_count(1,i+1) = T1_swap_1(xpos_at_frame, ypos_at_frame, ...
+%         %xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, ...
+%         %(t_index_j+1)*10+1);
+%         %% 1 for rate, 2 for cumulated T1, 3 for cell fraction
+%         T1_count(1,i+1) = T1_swap_2(xpos_at_frame, ypos_at_frame, ...
+%         xpos_at_next_frame, ypos_at_next_frame, Ncell,lengthscale, i, ...
+%         (t_index_j+1)*10+1,3);
+%     end
+%     
+%     T1_cells_list{t_index_i+1,t_index_j+1} = T1_count;
+%     
+%     figure((t_index_j+1)*10+5), clf, hold on, box on;
+%     n = 100; % average every n values
+%     %T1_count = arrayfun(@(i) mean(T1_count(i:i+n-1)),1:n:length(T1_count)-n+1)'; % the averaged vector
+%     plot((1:length(T1_count))* time_scale,T1_count);
+%     xlabel('time');ylabel('T1');
+%     ax = gca;
+%     ax.XScale = "log";
+%     hold off;
+%     %sum(T1_count)/(frames *(1/5000) * (100000/0.005))
+%     figure((t_index_j+1)*10+6)
+%     test = find(T1_count>0) * (1/5000) * (100000/0.005);
+%     [count,edges] = histcounts(log10(test));
+%     histogram(test,10.^edges,'Normalization','countdensity')
+%     xlabel('time');ylabel('T1 rate');
+%     set(gca, 'xscale','log')
 %     
 %     i = frames;
 %     
@@ -279,7 +284,7 @@ for t_index_i =5:9
 %     fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [1,500,1]);
 %     
     fitfun = fittype( @(tao, b, x) exp(-(x/tao).^b));
-    fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [500,1]);
+    fitted = fit( (logindex)', abs(ISF(logindex)), fitfun, 'StartPoint', [500,1]);
     
     ISF_en{t_index_i+1,t_index_j+1} = ISF;
     tao_en{t_index_i+1,t_index_j+1} = fitted.tao * (1/5000) * (100000/0.005);
@@ -464,12 +469,29 @@ ax.XScale = "log";
 ax.YScale = "log";
 xlabel('1/v^2');ylabel('tao * v');
 
+% figure(9); hold on
+% re = all_mean_cal_A';
+% for i = 1:10
+%     plot(1./(v0(i:10:end,1).^2),[tao_en{i,:}].*v0(i:10:end,1)','color','blue');
+% end
+% scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
+% ax = gca;
+% ax.XScale = "log";
+% ax.YScale = "log";
+% xlabel('1/v^2');ylabel('tao * v');
+
 figure(9); hold on
+v0_s = [];
 re = all_mean_cal_A';
 for i = 1:10
-    plot(1./(v0(i:10:end,1).^2),[tao_en{i,:}].*v0(i:10:end,1)','color','blue');
+    v0_temp = cell2mat(v0_en(i,:)');
+    v0_temp = sort(v0_temp(:,1));
+    v0_s = [v0_s; v0_temp'];
+    plot(1./(v0_temp.^2),[tao_en{i,:}].*v0_temp','color','blue');
 end
-scatter(1./(v0(:,1).^2),[tao_en{:}].*v0(:,1)',30,re(:),'filled');
+scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
 cb = colorbar();
 %xlim([-inf, 10^4]);
 ax = gca;
