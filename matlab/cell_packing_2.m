@@ -128,7 +128,11 @@ for t_index_i =0:9
 %         disp(difference)
 %     end
     
-    N=sum(lengthscale(1:end-2),'all');
+    N=sum(lengthscale(1:end-2),'all');    
+        
+%     frames= floor((size(coordinate,1)/N)/2);
+%     coordinate = coordinate(frames*N + 1:end,:);
+    
     frames= size(coordinate,1)/N ;
     %frames = 3700;
     Ncell = size(lengthscale,1)-2;
@@ -270,15 +274,6 @@ for t_index_i =0:9
     [ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
     logindex = unique(round(logspace(0, log10(deltaT1(end)),100)));
     deltaT1 = deltaT1 * time_scale;  
-    % open figure window
-    figure((t_index_j+1)*10+3), clf, hold on, box on;
-    % plot curve, add units to axes, etc
-    plot(deltaT1(logindex), ISF(logindex),'color','red','linewidth',3);
-    xlabel('time');ylabel('MSD');
-    length_t = length(deltaT);
-    ax = gca;
-    ax.XScale = "log";
-    ax.YScale = "Linear";
     
 %     fitfun = fittype( @(C, tao, b, x) C*exp(-(x/tao).^b));
 %     fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [1,500,1]);
@@ -287,7 +282,21 @@ for t_index_i =0:9
     fitted = fit( (logindex)', abs(ISF(logindex)), fitfun, 'StartPoint', [500,1]);
     
     ISF_en{t_index_i+1,t_index_j+1} = ISF;
-    tao_en{t_index_i+1,t_index_j+1} = fitted.tao * (1/5000) * (100000/0.005);
+    tao_en{t_index_i+1,t_index_j+1} = fitted.tao * time_scale;
+    % open figure window
+    figure(13), hold on, box on;
+    if t_index_j == 0
+        clf
+    end
+    %figure((t_index_j+1)*10+3), clf, hold on, box on;
+    % plot curve, add units to axes, etc
+    %plot(deltaT1(logindex), ISF(logindex),'color','red','linewidth',3);
+    plot(fitted,(logindex), ISF(logindex));
+    xlabel('time');ylabel('ISF');
+    length_t = length(deltaT);
+    ax = gca;
+    ax.XScale = "log";
+    ax.YScale = "Linear";
     
     
     v_d_index = t_index_i * 10 + t_index_j + 1;
@@ -379,8 +388,6 @@ ax.XScale = "log";
 ax.YScale = "log";
 
 figure(200), clf, hold on, box on;
-% plot curve, add units to axes, etc
-%deltaT = deltaT * 1/0.005;
 plot(deltaT(logindex), ISF_en{7,1}(logindex),'color','red','linewidth',3);
 plot(deltaT(logindex), ISF_en{7,3}(logindex),'color','green','linewidth',3);
 plot(deltaT(logindex), ISF_en{7,6}(logindex),'color','black','linewidth',3);
@@ -489,11 +496,11 @@ for i = 1:10
     v0_temp = cell2mat(v0_en(i,:)');
     v0_temp = sort(v0_temp(:,1));
     v0_s = [v0_s; v0_temp'];
-    plot(1./(v0_temp.^2),[tao_en{i,:}].*v0_temp','color','blue');
+    plot(1./(v0_temp.^2),[tao_en{i,:}].*v0_temp');
 end
-scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
-cb = colorbar();
-%xlim([-inf, 10^4]);
+% scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
 ax = gca;
 ax.XScale = "log";
 ax.YScale = "log";
