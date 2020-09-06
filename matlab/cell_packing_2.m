@@ -10,7 +10,7 @@ mode = 2;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells48/";
+basefolder = "~/project/cells54/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -30,7 +30,7 @@ v0_en = {};
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =0:9
+for t_index_i =2:9
     %close all
     for t_index_j = 7:7
     try
@@ -234,6 +234,11 @@ for t_index_i =0:9
     ypos_at_frame = coordinate(start_point:end_point,2);
     [vAll,cAll,xcomp,ycomp] = draw_voronoi(xpos_at_frame, ypos_at_frame, Ncell, lengthscale, (t_index_j+1)*10+1);
     voronoi_con_net = voronoi_contact(cAll, Ncell);
+    
+%     [structure, wave] = cal_structure_factor(N, coordinate, frames, Ncell, lengthscale);   
+%     figure(5)
+%     plot(wave, structure);
+%     xlabel('q');ylabel('S');
     
     %is_equal = isequal(voronoi_con_net,jammed_voronoi_con_net);
     %is_equal = compare_contact(voronoi_con_net,jammed_voronoi_con_net,Ncell);
@@ -529,6 +534,45 @@ for i = [2,3,4,5,6,9,10]
     v0_temp = sort(v0_temp(:,1));v0_temp = v0_temp(2:end);
     v0_s = [v0_s; v0_temp'];
     plot(1./(v0_temp.^2),[tao_en{i,2:end}].*v0_temp');
+end
+% scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
+
+figure(9); hold on
+v0_s = [];
+re = all_mean_cal_A';
+for i = 3:10
+    v0_temp = cell2mat(v0_en(i,2:end)');
+    v0_temp = sort(v0_temp(:,1));
+    v0_s = [v0_s; v0_temp'];
+    plot(1./(v0_temp.^2),[tao_en{i,2:end}].*v0_temp');
+end
+% scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
+
+figure(9); hold on
+kb_0 = 0.00037;
+u = 10;
+sigma = 0.005;
+v0_s = [];
+re = all_mean_cal_A';
+for i = 3:10
+    v0_temp = cell2mat(v0_en(i,2:end)');
+    kb_temp = v0_temp(1,3);
+    v0_temp = sort(v0_temp(:,1));
+    v0_s = [v0_s; v0_temp'];
+    x = abs(kb_temp - kb_0);
+    plot((x^(2/u))./(v0_temp.^2),x^sigma * log10([tao_en{i,2:end}].*v0_temp'));
 end
 % scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
 % cb = colorbar();
@@ -1231,6 +1275,48 @@ function [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale)
 
     % create deltaT array, using a for loop or vectorization
     deltaT = 1:NT;
+
+
+end
+
+function [structure, wave] = cal_structure_factor(N, coordinate, frames, Ncell, lengthscale)
+
+
+    xcomp=zeros(frames,Ncell);
+    ycomp=zeros(frames,Ncell);
+    for i = 1 :1
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        [xcomp_t,ycomp_t]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+        xcomp(i,:)= xcomp_t;
+        ycomp(i,:)= ycomp_t;
+    end
+    
+    
+    % create MSD array (y-axis of MSD plot)
+    structure = [];
+    wave = [];
+    r0 = sqrt(0.92 * lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
+
+    for q = 2*pi/lengthscale(end) : 0.1 : 2*pi/(0.5*r0)
+
+        % calculate x displacements, separated by ii indices
+        dx = xcomp(1,:);
+
+        % calculate y displacements similarly
+        dy = ycomp(1,:);
+    
+        count = 0;
+        s = 0;
+        for th = 0: 0.1: 2*3.141
+        % take mean over all displacements
+            s = s + abs(sum(exp(sqrt(-1) * (cos(th)*q*dx + sin(th)*q*dy)),'all'))^2;
+            count = count + 1;
+        end
+        % store in MSD array
+        structure = [structure, s/(count* Ncell)];
+        wave = [wave, q*r0/pi];
+    end
 
 
 end
