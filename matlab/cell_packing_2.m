@@ -6,11 +6,11 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 1;
+mode = 2;
 
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells49/";
+basefolder = "~/project/cells48/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -32,7 +32,7 @@ time_scale = (1/5000) * (100000/0.005);
 
 for t_index_i =0:9
     %close all
-    for t_index_j = 0:9
+    for t_index_j = 7:7
     try
     
     if(mode==1)
@@ -138,15 +138,15 @@ for t_index_i =0:9
     Ncell = size(lengthscale,1)-2;
 
 
-%     %vobj = VideoWriter('test.mp4','MPEG-4');
+    %vobj = VideoWriter('test.mp4','MPEG-4');
 %     vobj = VideoWriter('test1.avi');
 %     vobj.FrameRate = 3;
 %     open(vobj);
 %         for i = 1 :  round(frames/50):frames
 %             start_point = 1 + N * ( i - 1 );
 %             end_point = N * i;
-%             plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
-%                 coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2))
+%            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%              coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale)
 %             frame = getframe(gcf) ;
 %             writeVideo(vobj, frame);
 %         end
@@ -157,8 +157,8 @@ for t_index_i =0:9
 %     for i = 1 :  round(frames/20):frames
 %         start_point = 1 + N * ( i - 1 );
 %         end_point = N * i;
-%         plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
-%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2))
+%         plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale)
 %     end
 % % %     
 %     T1_count = zeros(1, frames);
@@ -497,6 +497,38 @@ for i = 1:10
     v0_temp = sort(v0_temp(:,1));
     v0_s = [v0_s; v0_temp'];
     plot(1./(v0_temp.^2),[tao_en{i,:}].*v0_temp');
+end
+% scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
+
+figure(9); hold on
+v0_s = [];
+re = all_mean_cal_A';
+for i = 1:10
+    v0_temp = cell2mat(v0_en(i,8)');
+    kb_temp = v0_temp(1,3);
+    v0_temp = sort(v0_temp(:,1));
+    v0_s = [v0_s; v0_temp'];
+    scatter(kb_temp,log10([tao_en{i,8}].*v0_temp'));
+end
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('kb');ylabel('ln(tao * v)');
+
+figure(9); hold on
+v0_s = [];
+re = all_mean_cal_A';
+for i = [2,3,4,5,6,9,10]
+    v0_temp = cell2mat(v0_en(i,:)');
+    v0_temp = sort(v0_temp(:,1));v0_temp = v0_temp(2:end);
+    v0_s = [v0_s; v0_temp'];
+    plot(1./(v0_temp.^2),[tao_en{i,2:end}].*v0_temp');
 end
 % scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
 % cb = colorbar();
@@ -1281,6 +1313,70 @@ function [MSD,deltaT] = cal_msd_vertex(N, coordinate, frames)
 
 end
 
+function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale)
+    % number of particles
+    Ncell   = length(lengthscale(1:end-2));
+
+    % determine colors
+    c       = zeros(Ncell,3);
+    c0      = [0 0.2 0.95];
+    rmin    = min(lengthscale(1:end-2));
+    rs      = lengthscale(1:end-2)./rmin;        
+    for n = 1:Ncell
+        c(n,:) = rs(n).*c0;
+    end
+    cmax    = max(max(c));
+    c       = c./cmax; 
+    c = jet(Ncell);
+    
+    figure(fig), clf, hold on, box on;
+    axis('equal');
+    axis([0 L(1) 0 L(2)]);
+
+    x_f = mod(x_f,L(1));
+    y_f = mod(y_f,L(2));
+
+    
+    for ci = 1:Ncell
+        index = sum(lengthscale(1:ci),'all');
+        start_point_last = 1 + index - lengthscale(ci);
+        end_point_last = index;
+        x = x_f(start_point_last:end_point_last);
+        y = y_f(start_point_last:end_point_last);
+        r = r_f(start_point_last:end_point_last);
+        for n = 1:lengthscale(ci)
+
+            rectangle('Position',[x(n)-r(n), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+
+            if (x(n)+r(n))>L(1)
+                rectangle('Position',[x(n)-r(n)-L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            end
+
+            if (x(n)-r(n))<0
+                rectangle('Position',[x(n)-r(n)+L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            end
+
+            if (y(n)+r(n))>L(2)
+                rectangle('Position',[x(n)-r(n), y(n)-r(n)-L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            end
+
+            if (y(n)-r(n))<0
+                rectangle('Position',[x(n)-r(n), y(n)-r(n)+L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            end        
+
+            if ((x(n)+r(n))>L(1) || (x(n)-r(n))<0) && ((y(n)+r(n))>L(2) || (y(n)-r(n))<0)
+                x1 = mod((x(n) + L(1)),L(1));
+                y1 = mod((y(n) + L(2)),L(2));
+                rectangle('Position',[x1-r(n), y1-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            end
+
+        end
+    end
+    
+    
+    drawnow;
+    %hold off;
+end
 
 
 
