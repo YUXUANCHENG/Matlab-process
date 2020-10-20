@@ -6,11 +6,14 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 2;
+mode = 1;
+hopper = 0;
+disk = 1;
 
+periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells54/";
+basefolder = "~/project/cells69/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -27,13 +30,14 @@ tao_en = {};
 T1_cells_list = {};
 v0 = [];
 v0_en = {};
+vel_m = {};
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =2:9
+for t_index_i =0:9
     %close all
-    for t_index_j = 7:7
-    try
+    for t_index_j = 0:9
+     try
     
     if(mode==1)
         folder = basefolder + int2str(t_index_i) + "/";
@@ -75,12 +79,18 @@ for t_index_i =2:9
     N=sum(lengthscale(1:end-2),'all');
     frames= size(coordinate,1)/N ;
     Ncell = size(lengthscale,1)-2;
-
+    
+    if (hopper == 1)
+        coordinate(:,1) = coordinate(:,1) + lengthscale(end-1);
+        lengthscale(end-1) = 2 * lengthscale(end-1);
+        periodic = 0;
+    end
+% 
 %     for i = 1 :frames
 %         start_point = 1 + N * ( i - 1 );
 %         end_point = N * i;
 %         plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
-%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2))
+%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2),periodic)
 %     %         frame = getframe(gcf) ;
 %     %         writeVideo(vobj, frame);
 %     end
@@ -89,7 +99,7 @@ for t_index_i =2:9
     start_point = 1 + N * ( i - 1 );
     end_point = N * i;
     plot_particles_2d(1,[lengthscale(end-1),lengthscale(end)],...
-    coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2))
+    coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2),periodic)
 
     xpos_at_frame = coordinate(start_point:end_point,1);
     ypos_at_frame = coordinate(start_point:end_point,2);
@@ -104,8 +114,12 @@ for t_index_i =2:9
     %length_file = folder + "length" + extend;
     length_file = folder + "length" + extend;
     lengthscale = csvread(length_file);
-    cal_A_file = folder + "calA" + extend1;
-    cal_A = csvread(cal_A_file);
+    try
+        cal_A_file = folder + "calA" + extend1;
+        cal_A = csvread(cal_A_file);
+    catch
+        disp('no calA file')
+    end
     try
         contact_file = folder + "contact" + extend1;
         contact = dlmread(contact_file);
@@ -114,8 +128,11 @@ for t_index_i =2:9
     end
     v_file = folder + "v" + extend1;
     vel = csvread(v_file);
+    vel_m{t_index_i+1,t_index_j+1} = sqrt(mean(vel(:,1).^2 + vel(:,2).^2,'all'));
     
-    catch
+    
+     catch e
+        fprintf(1,"%s", e.message);
         continue
     end
     
@@ -136,31 +153,42 @@ for t_index_i =2:9
     frames= size(coordinate,1)/N ;
     %frames = 3700;
     Ncell = size(lengthscale,1)-2;
+    
+    if (hopper == 1)
+        coordinate(:,1) = coordinate(:,1) + lengthscale(end-1);
+        lengthscale(end-1) = 2 * lengthscale(end-1);
+        periodic = 0;
+    end
+    
 
 
-    %vobj = VideoWriter('test.mp4','MPEG-4');
-%     vobj = VideoWriter('test1.avi');
+%     %vobj = VideoWriter('test.mp4','MPEG-4');
+%     vobj = VideoWriter('test2.avi');
 %     vobj.FrameRate = 3;
 %     open(vobj);
 %         for i = 1 :  round(frames/50):frames
 %             start_point = 1 + N * ( i - 1 );
 %             end_point = N * i;
 %            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-%              coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale)
+%              coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
 %             frame = getframe(gcf) ;
 %             writeVideo(vobj, frame);
 %         end
 % 
 %     close(vobj);
 
-
-%     for i = 1 :  round(frames/20):frames
-%         start_point = 1 + N * ( i - 1 );
-%         end_point = N * i;
-%         plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale)
-%     end
-% % %     
+    for i = 1 :  round(frames/20):frames
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        if (disk ~= 1)
+            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+                coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+        else
+        plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+            cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+        end
+    end
+%%%% %     
 %     T1_count = zeros(1, frames);
 %     for i = 1 : frames
 %         start_point = 1 + N * ( i - 1 );
@@ -226,10 +254,16 @@ for t_index_i =2:9
 %         close(vobj);
 
     i = floor(frames);
+    %i = 1;
     start_point = 1 + N * ( i - 1 );
     end_point = N * i;
-    plot_particles_2d((t_index_j+1)*10,[lengthscale(end-1),lengthscale(end)],...
-        coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2))
+    if (disk ~= 1)
+            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+                coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+        else
+        plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+            cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+        end
     xpos_at_frame = coordinate(start_point:end_point,1);
     ypos_at_frame = coordinate(start_point:end_point,2);
     [vAll,cAll,xcomp,ycomp] = draw_voronoi(xpos_at_frame, ypos_at_frame, Ncell, lengthscale, (t_index_j+1)*10+1);
@@ -276,18 +310,22 @@ for t_index_i =2:9
         disp({'voronoi_con_net is different for ',t_index_i,t_index_j})
     end
     
-    [ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
+    i = floor(frames/2);
+    start_point = 1 + N * ( i - 1 );
+    [ISF,deltaT1] = cal_ISF(N, coordinate(start_point:end,:), frames-i, Ncell, lengthscale);
+    %[ISF,deltaT1] = cal_ISF(N, coordinate, frames, Ncell, lengthscale);
     logindex = unique(round(logspace(0, log10(deltaT1(end)),100)));
     deltaT1 = deltaT1 * time_scale;  
+     
+%     fitfun = fittype( @(tao, b, x) exp(-abs(x/tao).^b));
+%     fitted = fit( (logindex)', abs(ISF(logindex)), fitfun, 'StartPoint', [20 * (10 - t_index_j),1]);
     
-%     fitfun = fittype( @(C, tao, b, x) C*exp(-(x/tao).^b));
-%     fitted = fit( (logindex)', ISF(logindex), fitfun, 'StartPoint', [1,500,1]);
-%     
-    fitfun = fittype( @(tao, b, x) exp(-(x/tao).^b));
-    fitted = fit( (logindex)', abs(ISF(logindex)), fitfun, 'StartPoint', [500,1]);
+    half = ceil(length(logindex)/10);
+    fitfun = fittype( @(tao, b, x) exp(-abs(x/tao).^b));
+    fitted = fit( (logindex(half:end))', abs(ISF(logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - t_index_j),1]);
     
     ISF_en{t_index_i+1,t_index_j+1} = ISF;
-    tao_en{t_index_i+1,t_index_j+1} = fitted.tao * time_scale;
+    tao_en{t_index_i+1,t_index_j+1} = abs(fitted.tao) * time_scale;
     % open figure window
     figure(13), hold on, box on;
     if t_index_j == 0
@@ -296,7 +334,9 @@ for t_index_i =2:9
     %figure((t_index_j+1)*10+3), clf, hold on, box on;
     % plot curve, add units to axes, etc
     %plot(deltaT1(logindex), ISF(logindex),'color','red','linewidth',3);
-    plot(fitted,(logindex), ISF(logindex));
+    scatter(logindex,ISF(logindex),25,'filled');hold on;
+    plot(fitted,(logindex(half:end)), ISF(logindex(half:end)));
+    %%plot(fitted,(logindex), ISF(logindex));
     xlabel('time');ylabel('ISF');
     length_t = length(deltaT);
     ax = gca;
@@ -546,11 +586,27 @@ xlabel('1/v^2');ylabel('tao * v');
 figure(9); hold on
 v0_s = [];
 re = all_mean_cal_A';
-for i = 3:10
+for i = 1:10
     v0_temp = cell2mat(v0_en(i,2:end)');
     v0_temp = sort(v0_temp(:,1));
     v0_s = [v0_s; v0_temp'];
     plot(1./(v0_temp.^2),[tao_en{i,2:end}].*v0_temp');
+end
+% scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
+% cb = colorbar();
+% %xlim([-inf, 10^4]);
+ax = gca;
+ax.XScale = "log";
+ax.YScale = "log";
+xlabel('1/v^2');ylabel('tao * v');
+
+figure(9); hold on
+v0_s = [];
+re = all_mean_cal_A';
+for i = [1,2,3,4,5,6,8,9,10]
+    v0_temp = [vel_m{i,2:end}];
+    v0_s = [v0_s; v0_temp'];
+    plot(1./(v0_temp.^2),[tao_en{i,2:end}].*v0_temp);
 end
 % scatter(1./(v0_s(:).^2),[tao_en{:}].*v0_s(:)',30,re(:),'filled');
 % cb = colorbar();
@@ -1250,7 +1306,7 @@ function [ISF,deltaT] = cal_ISF(N, coordinate, frames, Ncell, lengthscale)
     % create MSD array (y-axis of MSD plot)
     ISF = zeros(round(9*frames/10),1);
     NT = length(ISF);
-    q = sqrt(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
+    q = pi / sqrt(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
     logindex = unique(round(logspace(0, log10(NT),100)));
     % loop over the different possible time windows, calculate MSD for each
     % time window size
@@ -1399,7 +1455,7 @@ function [MSD,deltaT] = cal_msd_vertex(N, coordinate, frames)
 
 end
 
-function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale)
+function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale,p)
     % number of particles
     Ncell   = length(lengthscale(1:end-2));
 
@@ -1433,30 +1489,100 @@ function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale)
         for n = 1:lengthscale(ci)
 
             rectangle('Position',[x(n)-r(n), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            if (p == 1)
+                if (x(n)+r(n))>L(1)
+                    rectangle('Position',[x(n)-r(n)-L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
 
-            if (x(n)+r(n))>L(1)
-                rectangle('Position',[x(n)-r(n)-L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
-            end
+                if (x(n)-r(n))<0
+                    rectangle('Position',[x(n)-r(n)+L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
 
-            if (x(n)-r(n))<0
-                rectangle('Position',[x(n)-r(n)+L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
-            end
+                if (y(n)+r(n))>L(2)
+                    rectangle('Position',[x(n)-r(n), y(n)-r(n)-L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
 
-            if (y(n)+r(n))>L(2)
-                rectangle('Position',[x(n)-r(n), y(n)-r(n)-L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
-            end
+                if (y(n)-r(n))<0
+                    rectangle('Position',[x(n)-r(n), y(n)-r(n)+L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end        
 
-            if (y(n)-r(n))<0
-                rectangle('Position',[x(n)-r(n), y(n)-r(n)+L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
-            end        
-
-            if ((x(n)+r(n))>L(1) || (x(n)-r(n))<0) && ((y(n)+r(n))>L(2) || (y(n)-r(n))<0)
-                x1 = mod((x(n) + L(1)),L(1));
-                y1 = mod((y(n) + L(2)),L(2));
-                rectangle('Position',[x1-r(n), y1-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                if ((x(n)+r(n))>L(1) || (x(n)-r(n))<0) && ((y(n)+r(n))>L(2) || (y(n)-r(n))<0)
+                    x1 = mod((x(n) + L(1)),L(1));
+                    y1 = mod((y(n) + L(2)),L(2));
+                    rectangle('Position',[x1-r(n), y1-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
             end
 
         end
+    end
+    
+    
+    drawnow;
+    %hold off;
+end
+
+function plot_disk_2d_c(fig,L,r,x_f,y_f,lengthscale,p)
+    % number of particles
+    Ncell   = length(lengthscale(1:end-2));
+
+    % determine colors
+    c       = zeros(Ncell,3);
+    c0      = [0 0.2 0.95];
+    rmin    = min(lengthscale(1:end-2));
+    rs      = lengthscale(1:end-2)./rmin;        
+    for n = 1:Ncell
+        c(n,:) = rs(n).*c0;
+    end
+    cmax    = max(max(c));
+    c       = c./cmax; 
+    c = jet(Ncell);
+    
+    figure(fig), clf, hold on, box on;
+    axis('equal');
+    axis([0 L(1) 0 L(2)]);
+    
+    xcomp = zeros(1,Ncell);
+    ycomp = zeros(1,Ncell);
+    for ci = 1:Ncell
+        index = sum(lengthscale(1:ci),'all');
+        start_point_last = 1 + index - lengthscale(ci);
+        end_point_last = index;
+        cx_tmp = mean(x_f(start_point_last:end_point_last),'all');
+        cy_tmp = mean(y_f(start_point_last:end_point_last),'all');
+        xcomp(ci) = mod(cx_tmp,lengthscale(end-1));
+        ycomp(ci) = mod(cy_tmp,lengthscale(end));
+    end
+
+    
+    for ci = 1:Ncell
+
+
+            rectangle('Position',[xcomp(ci)-r(ci), ycomp(ci)-r(ci), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+            if (p == 1)
+                if (xcomp(ci)+r(ci))>L(1)
+                    rectangle('Position',[xcomp(ci)-r(ci)-L(1), ycomp(ci)-r(ci), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
+
+                if (xcomp(ci)-r(ci))<0
+                    rectangle('Position',[xcomp(ci)-r(ci)+L(1), ycomp(ci)-r(ci), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
+
+                if (ycomp(ci)+r(ci))>L(2)
+                    rectangle('Position',[xcomp(ci)-r(ci), ycomp(ci)-r(ci)-L(1), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
+
+                if (ycomp(ci)-r(ci))<0
+                    rectangle('Position',[xcomp(ci)-r(ci), ycomp(ci)-r(ci)+L(1), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end        
+
+                if ((xcomp(ci)+r(ci))>L(1) || (xcomp(ci)-r(ci))<0) && ((ycomp(ci)+r(ci))>L(2) || (ycomp(ci)-r(ci))<0)
+                    x1 = mod((xcomp(ci) + L(1)),L(1));
+                    y1 = mod((ycomp(ci) + L(2)),L(2));
+                    rectangle('Position',[x1-r(ci), y1-r(ci), 2*r(ci), 2*r(ci)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+                end
+            end
+
+    
     end
     
     

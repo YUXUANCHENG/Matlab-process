@@ -1,4 +1,4 @@
-function plot_particles_2d(fig,L,r,x,y)
+function plot_particles_2d(fig,L,r,x,y,p)
     % number of particles
     N       = length(r);
 
@@ -22,27 +22,28 @@ function plot_particles_2d(fig,L,r,x,y)
     for n = 1:N
         
         rectangle('Position',[x(n)-r(n), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
-        
-        if (x(n)+r(n))>L(1)
-            rectangle('Position',[x(n)-r(n)-L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
-        end
-        
-        if (x(n)-r(n))<0
-            rectangle('Position',[x(n)-r(n)+L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
-        end
-        
-        if (y(n)+r(n))>L(2)
-            rectangle('Position',[x(n)-r(n), y(n)-r(n)-L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
-        end
-        
-        if (y(n)-r(n))<0
-            rectangle('Position',[x(n)-r(n), y(n)-r(n)+L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
-        end        
-        
-        if ((x(n)+r(n))>L(1) || (x(n)-r(n))<0) && ((y(n)+r(n))>L(2) || (y(n)-r(n))<0)
-            x1 = mod((x(n) + L(1)),L(1));
-            y1 = mod((y(n) + L(2)),L(2));
-            rectangle('Position',[x1-r(n), y1-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+        if (p ==1)
+            if (x(n)+r(n))>L(1)
+                rectangle('Position',[x(n)-r(n)-L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+            end
+
+            if (x(n)-r(n))<0
+                rectangle('Position',[x(n)-r(n)+L(1), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+            end
+
+            if (y(n)+r(n))>L(2)
+                rectangle('Position',[x(n)-r(n), y(n)-r(n)-L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+            end
+
+            if (y(n)-r(n))<0
+                rectangle('Position',[x(n)-r(n), y(n)-r(n)+L(1), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+            end        
+
+            if ((x(n)+r(n))>L(1) || (x(n)-r(n))<0) && ((y(n)+r(n))>L(2) || (y(n)-r(n))<0)
+                x1 = mod((x(n) + L(1)),L(1));
+                y1 = mod((y(n) + L(2)),L(2));
+                rectangle('Position',[x1-r(n), y1-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(n,:),'facecolor',c(n,:));
+            end
         end
         
     end
