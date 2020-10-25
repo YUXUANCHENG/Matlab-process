@@ -7,13 +7,13 @@ global T1_cells;
 global T1_index;
 
 mode = 1;
-hopper = 0;
-disk = 1;
+hopper = 1;
+disk = 0;
 
 periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells69/";
+basefolder = "~/project/cells74/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -161,23 +161,28 @@ for t_index_i =0:9
     end
     
 
-
+% 
 %     %vobj = VideoWriter('test.mp4','MPEG-4');
 %     vobj = VideoWriter('test2.avi');
 %     vobj.FrameRate = 3;
 %     open(vobj);
-%         for i = 1 :  round(frames/50):frames
+%         for i = 1 :  ceil(frames/50):frames
 %             start_point = 1 + N * ( i - 1 );
 %             end_point = N * i;
-%            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-%              coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+%             if (disk ~= 1)
+%                  plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%                     coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+%             else
+%                 plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%                     cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+%             end
 %             frame = getframe(gcf) ;
 %             writeVideo(vobj, frame);
 %         end
 % 
 %     close(vobj);
 
-    for i = 1 :  round(frames/20):frames
+    for i = 1 :  ceil(frames/20):frames
         start_point = 1 + N * ( i - 1 );
         end_point = N * i;
         if (disk ~= 1)
@@ -1473,10 +1478,14 @@ function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale,p)
     
     figure(fig), clf, hold on, box on;
     axis('equal');
-    axis([0 L(1) 0 L(2)]);
-
-    x_f = mod(x_f,L(1));
-    y_f = mod(y_f,L(2));
+    
+    if (p == 1)
+        axis([0 L(1) 0 L(2)]);
+        x_f = mod(x_f,L(1));
+        y_f = mod(y_f,L(2));
+    else
+        axis([0 L(1)*1.1 0 L(2)]);
+    end
 
     
     for ci = 1:Ncell
@@ -1553,6 +1562,10 @@ function plot_disk_2d_c(fig,L,r,x_f,y_f,lengthscale,p)
         ycomp(ci) = mod(cy_tmp,lengthscale(end));
     end
 
+    if (p == 1)
+        xcomp = mod(xcomp,L(1));
+        ycomp = mod(ycomp,L(2));
+    end
     
     for ci = 1:Ncell
 

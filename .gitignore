@@ -14,7 +14,7 @@ bash/*/tasks
 *.stats
 *.mp4
 *.mov
-
+*.avi
 *.txt
 
 
