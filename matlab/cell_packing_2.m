@@ -1,19 +1,22 @@
-clc
-clear
-close all
+% clc
+% clear
+% close all
 
 global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 1;
+mode = 2;
 hopper = 1;
 disk = 0;
+skip = 0;
+
+qmode = 2;
 
 periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells74/";
+basefolder = "~/project/cells97/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -29,28 +32,44 @@ ISF_en = {};
 tao_en = {};
 T1_cells_list = {};
 v0 = [];
+clog = [];
 v0_en = {};
 vel_m = {};
+dif = [];
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =0:9
+for t_index_i =1:39
     %close all
-    for t_index_j = 0:9
+    for t_index_j = 1:19
+% for t_index_i =0:9
+%     %close all
+%     for t_index_j = 2:2
      try
     
     if(mode==1)
         folder = basefolder + int2str(t_index_i) + "/";
         v0_file = folder + "v0.txt";
-        tmp = csvread(v0_file);
-        v0_en{t_index_i+1,t_index_j+1} = tmp(t_index_j+1,:);
-        v0 = [v0;csvread(v0_file)];
+        try
+            tmp = csvread(v0_file);
+            v0_en{t_index_i+1,t_index_j+1} = tmp(t_index_j+1,:);
+            v0 = [v0;csvread(v0_file)];
+            if (t_index_j == 0 )
+                clog = [clog;csvread(v0_file)];
+            end
+        catch
+            disp('no v0');
+        end
     elseif(mode==2)
         folder = basefolder + int2str(t_index_i) + "_" + int2str(t_index_j) + "/";
         v0_file = folder + "v0.txt";
+        try
         tmp = csvread(v0_file);
         v0_en{t_index_i+1,t_index_j+1} = tmp;
         v0 = [v0;csvread(v0_file)];
+        catch
+            disp('no v0');
+        end
     elseif(mode==0)
         folder = basefolder;
         v0_file = folder + "v0.txt";
@@ -129,7 +148,9 @@ for t_index_i =0:9
     v_file = folder + "v" + extend1;
     vel = csvread(v_file);
     vel_m{t_index_i+1,t_index_j+1} = sqrt(mean(vel(:,1).^2 + vel(:,2).^2,'all'));
-    
+    vel_s = sqrt(vel(:,1).^2 + vel(:,2).^2)/lengthscale(end);
+    figure(8), hold on, box on;
+    h = histogram(vel_s,200,'BinWidth',2e-5, 'Normalization', 'probability')
     
      catch e
         fprintf(1,"%s", e.message);
@@ -162,8 +183,8 @@ for t_index_i =0:9
     
 
 % 
-%     %vobj = VideoWriter('test.mp4','MPEG-4');
-%     vobj = VideoWriter('test2.avi');
+% %     %vobj = VideoWriter('test.mp4','MPEG-4');
+%     vobj = VideoWriter('hopperc.avi');
 %     vobj.FrameRate = 3;
 %     open(vobj);
 %         for i = 1 :  ceil(frames/50):frames
@@ -181,19 +202,41 @@ for t_index_i =0:9
 %         end
 % 
 %     close(vobj);
-
-    for i = 1 :  ceil(frames/20):frames
-        start_point = 1 + N * ( i - 1 );
-        end_point = N * i;
-        if (disk ~= 1)
-            plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-                coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
-        else
-        plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-            cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
-        end
-    end
-%%%% %     
+% % 
+%     for i = 1 :  ceil(frames/20):frames
+%         start_point = 1 + N * ( i - 1 );
+%         end_point = N * i;
+%         if (disk ~= 1)
+%             plot_particles_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%                 coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+%         else
+%         plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%             cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+%         end
+%     end
+% %%%% %     
+%     probe_v = [];
+%     for i = 1 :frames
+%         start_point = 1 + Ncell * ( i - 1 );
+%         end_point = Ncell * i;
+%         vx_at_frame = vel(start_point:end_point,1);
+%         probe_v = [probe_v, vx_at_frame(1)];
+%     end
+%     figure(7);
+%     plot(probe_v);
+%     xlabel('time');ylabel('velocity');
+%     %mean(probe_v)
+    
+    i = 1;
+    start_point = 1 + N * ( i - 1 );
+    end_point = N * i;
+    [xcomp1,ycomp1]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+    i = frames;
+    start_point = 1 + N * ( i - 1 );
+    end_point = N * i;
+    [xcomp2,ycomp2]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+    disp(["vel: ", (xcomp2(1)-xcomp1(1))/(frames * time_scale * 0.005)])
+    
 %     T1_count = zeros(1, frames);
 %     for i = 1 : frames
 %         start_point = 1 + N * ( i - 1 );
@@ -258,6 +301,64 @@ for t_index_i =0:9
 %         
 %         close(vobj);
 
+    
+        
+    if hopper == 1
+        [count,deltaT] = cell_count(N, coordinate, frames, Ncell, lengthscale);
+        count =  (count - count(1)) * (-1);   
+        figure(14), hold on, box on;
+        plot(deltaT, count)
+        starttime = find(count > 0);
+        if size(starttime,1) > 0
+            starttime = starttime(1);
+            endtime = find(count == count(end));
+            endtime = endtime(1);
+            if endtime > starttime
+                if qmode == 1
+                    rate = (count(end)-count(starttime))/(endtime - starttime);
+                elseif qmode == 2
+                    window = 50;
+                    if endtime - starttime <= window
+                        rate = (count(end)-count(starttime))/(endtime - starttime);
+                    else
+                        temp_q = [];
+                        for time_point = starttime : window : endtime - window
+                            temp_rate = (count(time_point + window)-count(time_point))/window;
+                            if temp_rate > 0
+                                temp_q = [temp_q, temp_rate];
+                            end
+                        end
+                        rate = mean(temp_q,'all');
+                    end
+           
+                end
+            else
+                rate = 0;
+            end
+        else
+            rate = 0;
+        end
+        if rate >= 0
+            disp('pass');
+        else
+            continue
+        end
+        try
+            clog = [clog;[csvread(v0_file), rate]];
+        catch
+            disp('no v0');
+            continue
+        end
+    end
+    
+    if skip == 0
+    Ek = cal_Ek(Ncell, vel(:,4), frames);
+    figure(15), hold on, box on;
+        plot(Ek)
+        ax = gca;
+        %ax.FontSize = 22;
+        %ax.XScale = "log";
+        ax.YScale = "log";
     i = floor(frames);
     %i = 1;
     start_point = 1 + N * ( i - 1 );
@@ -283,26 +384,47 @@ for t_index_i =0:9
     %is_equal = compare_contact(voronoi_con_net,jammed_voronoi_con_net,Ncell);
     %is_equal = compare_contact1(voronoi_con_net,jammed_voronoi_con_net,xcomp_j,ycomp_j,lengthscale,Ncell);
     
+    
+    
     [MSD,deltaT] = cal_msd(N, coordinate, frames, Ncell, lengthscale);
+    MSD = MSD/(lengthscale(end)^2);
     %[MSD,deltaT] = cal_msd_vertex(N, coordinate, frames);
+    logindex = unique(round(logspace(0, log10(deltaT(end)),1000)));
+    
     deltaT = deltaT * time_scale;
     
     % open figure window
-    figure((t_index_j+1)*10+2), clf, hold on, box on;
+    figure((t_index_j+1)*10+2) 
+    if t_index_j == 0
+        clf
+    end
+    hold on, box on;
     % plot curve, add units to axes, etc
-    plot(deltaT, MSD,'color','red','linewidth',3);
+    %plot(deltaT(logindex), MSD(logindex),'color','red','linewidth',3);
+    plot(deltaT(logindex), MSD(logindex),'linewidth',3);
     xlabel('time');ylabel('MSD');
     length_t = length(deltaT);
-    P = polyfit(log10(deltaT(round(3*length_t/6): end)), log10(MSD(round(3*length_t/6): end))', 1);
+    half_log = round(size(logindex,2)/3);
+    if half_log == 0
+        continue
+    end
+    [P,S] = polyfit(log10(deltaT(logindex(half_log:end))), log10(MSD(logindex(half_log:end))'), 1);
+    uncertainty = sqrt(diag((S.R)\inv(S.R'))./S.normr.^2./S.df);
     %P = polyfit(log10(deltaT(1: end)), log10(MSD(1: end))', 1);
-    yfit = P(1)*log10(deltaT)+P(2);
-    plot(deltaT,10.^(yfit),'r-.');
+    yfit = P(1)*log10(deltaT(logindex))+P(2);
+    plot(deltaT(logindex),10.^(yfit),'r-.');
     theString = sprintf('slope = %.3f ', P(1));
-    text(10^5, 0.01, theString, 'FontSize', 20);
+    %text(10^5, 0.01, theString, 'FontSize', 20);
     ax = gca;
     %ax.FontSize = 22;
     ax.XScale = "log";
     ax.YScale = "log";
+    
+    %mean(MSD(logindex(end-10:end))./(4*deltaT(logindex(end-10:end))*0.005),'all')
+    disp(["difusion: ", (10^P(2))/(4 * 0.005), " +- ", (10^P(2) * log(10) * uncertainty(2))/(4*0.005)])
+    disp(["slope: ", P(1), "+- ", uncertainty(1)])
+    disp(["intercept: ", P(2), "+- ", uncertainty(2)])
+    dif = [dif, (10^P(2))/(4 * 0.005)];
     
     msd{t_index_i+1,t_index_j+1} = MSD;
     cri = max(MSD,[],'all')/(lengthscale(end)*lengthscale(end-1)/(3.14*Ncell));
@@ -348,6 +470,7 @@ for t_index_i =0:9
     ax.XScale = "log";
     ax.YScale = "Linear";
     
+    end
     
     v_d_index = t_index_i * 10 + t_index_j + 1;
     
@@ -695,7 +818,53 @@ xlabel('1/v^2');ylabel('tao * v');
 % xlabel("v0");
 % ylabel("CalA");
 
+clog_p = [];
+error = [];
+%gam = 0.05 + [0:9] * 0.02;
+gam = unique(clog(:,2))';
+for i = gam
+    test = clog(clog(:,2) == i,:);
+    clog_p = [clog_p, mean(test(:,4))];
+    error = [error, std(test(:,4))/sqrt(size(test(:,4), 1))];
+end
+figure(3);
+errorbar(gam/clog(1,1),clog_p,error,'o')
+%errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
+xlabel("gam/kl");
+%xlabel("alpha");
+ylabel("clogging probability");
 
+clog_p = [];
+error = [];
+%gam = 0.05 + [0:9] * 0.02;
+width = unique(clog(:,4))';
+for i = width
+    test = clog(clog(:,4) == i,:);
+    clog_p = [clog_p, mean(test(:,5))];
+    error = [error, std(test(:,5))/sqrt(size(test(:,5), 1))];
+end
+figure(3);
+errorbar(width,clog_p,error,'o')
+%errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
+xlabel("width");
+%xlabel("alpha");
+ylabel("clogging probability");
+
+clog_p = [];
+error = [];
+%gam = 0.05 + [0:9] * 0.02;
+width = unique(clog(:,4))';
+for i = width
+    test = clog(clog(:,4) == i,:);
+    clog_p = [clog_p, mean(test(:,6))];
+    error = [error, std(test(:,6))/sqrt(size(test(:,6), 1))];
+end
+figure(3);
+errorbar(width,clog_p,error,'o')
+%errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
+xlabel("width");
+%xlabel("alpha");
+ylabel("flow rate");
 
 function [vAll,cAll,xcomp,ycomp] = draw_voronoi(xpos_at_frame, ypos_at_frame, Ncell, lengthscale, fig)
     xcomp = zeros(1,Ncell);
@@ -1253,6 +1422,33 @@ function [xcomp,ycomp]=cal_c_pos(xpos_at_frame, ypos_at_frame, Ncell, lengthscal
     end
 end
 
+function [count,deltaT] = cell_count(N, coordinate, frames, Ncell, lengthscale)
+    xcomp=zeros(frames,Ncell);
+    ycomp=zeros(frames,Ncell);
+    for i = 1 :frames
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        [xcomp_t,ycomp_t]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+        xcomp(i,:)= xcomp_t;
+        ycomp(i,:)= ycomp_t;
+    end
+    
+    
+    % create MSD array (y-axis of MSD plot)
+    count = zeros(frames,1);
+    NT = length(count);
+    % logindex = unique(round(logspace(0, log10(NT),200)));
+    % loop over the different possible time windows, calculate MSD for each
+    % time window size
+    for ii = 1:NT
+        % store in MSD array
+        count(ii) = sum(xcomp(ii,:) < lengthscale(end-1));
+    end
+
+    % create deltaT array, using a for loop or vectorization
+    deltaT = 1:NT;
+
+end
 
 function [MSD,deltaT] = cal_msd(N, coordinate, frames, Ncell, lengthscale)
 
@@ -1271,15 +1467,57 @@ function [MSD,deltaT] = cal_msd(N, coordinate, frames, Ncell, lengthscale)
     % create MSD array (y-axis of MSD plot)
     MSD = zeros(round(9*frames/10),1);
     NT = length(MSD);
+    logindex = unique(round(logspace(0, log10(NT),1000)));
     % loop over the different possible time windows, calculate MSD for each
     % time window size
-    for ii = 1:NT
+    for ii = logindex
 
         % calculate x displacements, separated by ii indices
         dx = xcomp(1+ii:end,:) - xcomp(1:end-ii,:);
 
         % calculate y displacements similarly
         dy = ycomp(1+ii:end,:) - ycomp(1:end-ii,:);
+
+        % take mean over all displacements
+        dispMean = mean(dx.^2 + dy.^2,'all');
+
+        % store in MSD array
+        MSD(ii) = dispMean;
+    end
+
+    % create deltaT array, using a for loop or vectorization
+    deltaT = 1:NT;
+
+
+end
+
+function [MSD,deltaT] = cal_msd_1(N, coordinate, frames, Ncell, lengthscale)
+% exclude probing particle
+
+    xcomp=zeros(frames,Ncell);
+    ycomp=zeros(frames,Ncell);
+    for i = 1 :frames
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+        [xcomp_t,ycomp_t]=cal_c_pos(coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), Ncell, lengthscale);
+        xcomp(i,:)= xcomp_t;
+        ycomp(i,:)= ycomp_t;
+    end
+    
+    
+    % create MSD array (y-axis of MSD plot)
+    MSD = zeros(round(9*frames/10),1);
+    NT = length(MSD);
+    logindex = unique(round(logspace(0, log10(NT),200)));
+    % loop over the different possible time windows, calculate MSD for each
+    % time window size
+    for ii = logindex
+
+        % calculate x displacements, separated by ii indices
+        dx = xcomp(1+ii:end,2:end) - xcomp(1:end-ii,2:end);
+
+        % calculate y displacements similarly
+        dy = ycomp(1+ii:end,2:end) - ycomp(1:end-ii,2:end);
 
         % take mean over all displacements
         dispMean = mean(dx.^2 + dy.^2,'all');
@@ -1437,9 +1675,10 @@ function [MSD,deltaT] = cal_msd_vertex(N, coordinate, frames)
     % create MSD array (y-axis of MSD plot)
     MSD = zeros(round(9*frames/10),1);
     NT = length(MSD);
+    logindex = unique(round(logspace(0, log10(NT),100)));
     % loop over the different possible time windows, calculate MSD for each
     % time window size
-    for ii = 1:NT
+    for ii = logindex
 
         % calculate x displacements, separated by ii indices
         dx = xcomp(1+ii:end,:) - xcomp(1:end-ii,:);
@@ -1475,7 +1714,7 @@ function plot_particles_2d_c(fig,L,r_f,x_f,y_f,lengthscale,p)
     cmax    = max(max(c));
     c       = c./cmax; 
     c = jet(Ncell);
-    
+    c(1,:) = [0,0,0];
     figure(fig), clf, hold on, box on;
     axis('equal');
     
@@ -1545,6 +1784,7 @@ function plot_disk_2d_c(fig,L,r,x_f,y_f,lengthscale,p)
     cmax    = max(max(c));
     c       = c./cmax; 
     c = jet(Ncell);
+    c(1,:) = [0,0,0];
     
     figure(fig), clf, hold on, box on;
     axis('equal');
@@ -1603,6 +1843,15 @@ function plot_disk_2d_c(fig,L,r,x_f,y_f,lengthscale,p)
     %hold off;
 end
 
+function Ek = cal_Ek(Ncell, ek, frames)
+
+    Ek=zeros(frames,1);
+    for i = 1 :frames
+        start_point = 1 + Ncell * ( i - 1 );
+        end_point = Ncell * i;
+        Ek(i)= sum(ek(start_point:end_point),'all');
+    end   
+end
 
 
 
