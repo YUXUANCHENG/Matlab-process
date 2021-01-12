@@ -21,6 +21,7 @@ classdef CLI_hopper < CLI
                         trial.plotLastFrame(2);
                         trial.createCalculator();
                         trial.printCellCount();
+                        trial.plotEk();
                         trial.flowRate(mode,varargin);
                         %obj.clog = [obj.clog;[trial.fileReader.v0, trial.flow_rate]];
                         obj.hopperProperty = [obj.hopperProperty, trial];

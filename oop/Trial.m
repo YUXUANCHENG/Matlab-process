@@ -21,6 +21,9 @@ classdef Trial < handle
         kb
         kl
         calA0
+        MSD
+        deltaT
+        logindex
     end
     
     methods
@@ -77,6 +80,12 @@ classdef Trial < handle
             obj.plotConfig(num, start_point, end_point);
         end
         
+        function plotVelDistribution(obj)
+            vel_s = sqrt(obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)/obj.fileReader.lengthscale(end);
+            figure(8), hold on, box on;
+            h = histogram(vel_s,200,'BinWidth',2e-5, 'Normalization', 'probability');
+        end
+        
         function plotConfig(obj, num, start_point, end_point)
             obj.plot_particles_2d_c(num,[obj.lengthscale(end-1),obj.lengthscale(end)],...
                 obj.fileReader.coordinate(start_point:end_point,3)/2,obj.fileReader.coordinate(start_point:end_point,1),obj.fileReader.coordinate(start_point:end_point,2))
@@ -84,6 +93,48 @@ classdef Trial < handle
         
         function createCalculator(obj)
             obj.calculator = Calculator(obj);
+        end
+        
+        function rescaleMSD(obj)
+            obj.MSD = obj.MSD/(obj.fileReader.lengthscale(end)^2);
+            time_scale = (1/5000) * (100000/0.005);
+            obj.deltaT = obj.deltaT * time_scale;
+        end
+        
+        function cal_msd(obj)
+            [obj.MSD, obj.deltaT] = obj.calculator.cal_msd();
+            obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),1000)));
+            obj.rescaleMSD();
+        end
+        
+        function plotMSD(obj)
+            figure((obj.t_index_j+1)*10+2) 
+            hold on, box on;
+            % plot curve, add units to axes, etc
+            %plot(deltaT(logindex), MSD(logindex),'color','red','linewidth',3);
+            
+            plot(obj.deltaT(obj.logindex), obj.MSD(obj.logindex),'linewidth',3);
+            xlabel('time');ylabel('MSD');
+            length_t = length(obj.deltaT);
+            half_log = round(size(obj.logindex,2)/3);
+            if half_log == 0
+                return
+            end
+            [P,S] = polyfit(log10(obj.deltaT(obj.logindex(half_log:end))), log10(obj.MSD(obj.logindex(half_log:end))'), 1);
+            uncertainty = sqrt(diag((S.R)\inv(S.R'))./S.normr.^2./S.df);
+            %P = polyfit(log10(deltaT(1: end)), log10(MSD(1: end))', 1);
+            yfit = P(1)*log10(obj.deltaT(obj.logindex))+P(2);
+            plot(obj.deltaT(obj.logindex),10.^(yfit),'r-.');
+            theString = sprintf('slope = %.3f ', P(1));
+            %text(10^5, 0.01, theString, 'FontSize', 20);
+            ax = gca;
+            %ax.FontSize = 22;
+            ax.XScale = "log";
+            ax.YScale = "log";
+            
+            disp(["difusion: ", (10^P(2))/(4 * 0.005), " +- ", (10^P(2) * log(10) * uncertainty(2))/(4*0.005)])
+            disp(["slope: ", P(1), "+- ", uncertainty(1)])
+            disp(["intercept: ", P(2), "+- ", uncertainty(2)])
         end
         
         function plot_particles_2d_c(obj, fig, L, r_f, x_f, y_f)
@@ -109,7 +160,6 @@ classdef Trial < handle
             else
                 axis([0 L(1)*1.1 0 L(2)]);
             end
-
 
             for ci = 1:obj.Ncell
                 index = sum(obj.lengthscale(1:ci),'all');
@@ -147,8 +197,6 @@ classdef Trial < handle
 
                 end
             end
-
-
             drawnow;
             %hold off;
         end

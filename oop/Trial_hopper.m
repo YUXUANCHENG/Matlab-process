@@ -51,6 +51,16 @@ classdef Trial_hopper < Trial
             plot(obj.calculator.deltaT, temp_c)
         end
         
+        function plotEk(obj)
+            Ek = obj.calculator.cal_Ek();
+            figure(15), hold on, box on;
+            plot(Ek)
+            ax = gca;
+            %ax.FontSize = 22;
+            %ax.XScale = "log";
+            ax.YScale = "log";
+        end
+        
         function flowRate(obj, mode, varargin)
             if isempty(obj.calculator.count)
                 obj.calculator.cell_count();

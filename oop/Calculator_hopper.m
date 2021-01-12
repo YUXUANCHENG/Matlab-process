@@ -46,19 +46,15 @@ classdef Calculator_hopper < Calculator
             rate = obj.flowRateCalculator.cal_rate();
         end
         
-        function [xcomp,ycomp]=cal_c_pos(obj, xpos_at_frame, ypos_at_frame)
-            xcomp = zeros(1, obj.trial.Ncell);
-            ycomp = zeros(1, obj.trial.Ncell);
-            for ci = 1: obj.trial.Ncell
-                index = sum(obj.trial.lengthscale(1:ci),'all');
-                start_point_last = 1 + index - obj.trial.lengthscale(ci);
-                end_point_last = index;
-                cx_tmp = mean(xpos_at_frame(start_point_last:end_point_last),'all');
-                cy_tmp = mean(ypos_at_frame(start_point_last:end_point_last),'all');
-                xcomp(ci) = cx_tmp;
-                ycomp(ci) = cy_tmp;
-            end
+        function Ek = cal_Ek(obj)
+            Ek = zeros(obj.trial.frames,1);
+            for i = 1 : obj.trial.frames
+                start_point = 1 + obj.trial.Ncell * ( i - 1 );
+                end_point = obj.trial.Ncell * i;
+                Ek(i) =  sum(obj.trial.fileReader.vel(start_point:end_point),'all');
+            end   
         end
+        
     end
 end
 
