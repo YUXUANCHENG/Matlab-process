@@ -6,8 +6,8 @@ global T1_count;
 global T1_cells;
 global T1_index;
 
-mode = 2;
-hopper = 1;
+mode = 1;
+hopper = 0;
 disk = 0;
 skip = 0;
 
@@ -16,7 +16,7 @@ qmode = 2;
 periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells97/";
+basefolder = "~/project/cells98/";
 %basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
@@ -39,9 +39,9 @@ dif = [];
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =1:39
+for t_index_i =0:39
     %close all
-    for t_index_j = 1:19
+    for t_index_j = 2:19
 % for t_index_i =0:9
 %     %close all
 %     for t_index_j = 2:2

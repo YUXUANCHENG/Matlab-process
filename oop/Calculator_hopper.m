@@ -32,14 +32,16 @@ classdef Calculator_hopper < Calculator
 
             % create deltaT array, using a for loop or vectorization
             obj.deltaT = 1:NT;
-            obj.count =  (obj.count - obj.count(1)) * (-1); 
+            % obj.count =  (obj.count - obj.count(1)) * (-1); 
         end
         
         function rate = flowRate(obj, mode, varargin)
             if mode == 1
                 obj.flowRateCalculator = FlowRate1(obj.count);
             elseif mode == 2
-                obj.flowRateCalculator = FlowRate2(obj.count, varargin{1});
+                obj.flowRateCalculator = FlowRate2(obj.count, varargin{1}{1});
+            elseif mode == 3
+                obj.flowRateCalculator = FlowRate3(obj.count, varargin{1}{1});
             end
             rate = obj.flowRateCalculator.cal_rate();
         end

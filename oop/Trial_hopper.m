@@ -4,6 +4,10 @@ classdef Trial_hopper < Trial
     
     properties
         flow_rate
+        gam
+        g
+        width
+        result
     end
     
     methods
@@ -22,6 +26,15 @@ classdef Trial_hopper < Trial
             obj.hopperDataProcess();
         end
         
+        function readV0(obj)
+            obj.fileReader.readV0();
+            obj.kl = obj.fileReader.v0(1);
+            obj.gam = obj.fileReader.v0(2);
+            obj.g = obj.fileReader.v0(3);
+            obj.width = obj.fileReader.v0(4);
+            obj.result = obj.fileReader.v0(5);
+        end
+        
         function readMDdata(obj)
             readMDdata@Trial(obj);
             obj.hopperDataProcess();
@@ -33,8 +46,9 @@ classdef Trial_hopper < Trial
         
         function printCellCount(obj)
             obj.calculator.cell_count();
+            temp_c = (obj.calculator.count - obj.calculator.count(1)) * (-1); 
             figure(14), hold on, box on;
-            plot(obj.calculator.deltaT, obj.calculator.count)
+            plot(obj.calculator.deltaT, temp_c)
         end
         
         function flowRate(obj, mode, varargin)

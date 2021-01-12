@@ -6,7 +6,6 @@ classdef Trial < handle
         basefolder
         t_index_i
         t_index_j
-        v0
         folder
         fileReader
         periodic = 1
@@ -17,6 +16,11 @@ classdef Trial < handle
         lengthscale
         %vel
         calculator
+        velocity
+        Dr
+        kb
+        kl
+        calA0
     end
     
     methods
@@ -41,6 +45,15 @@ classdef Trial < handle
             obj.fileReader.readInitial();
             %obj.coordinate = obj.fileReader.coordinate;
             obj.getMDinfo();
+        end
+        
+        function readV0(obj)
+            obj.fileReader.readV0();
+            obj.velocity = obj.fileReader.v0(1);
+            obj.Dr = obj.fileReader.v0(2);
+            obj.kb = obj.fileReader.v0(3);
+            obj.kl = obj.fileReader.v0(4);
+            obj.calA0 = obj.fileReader.v0(5);
         end
         
         function plotInitial(obj)

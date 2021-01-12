@@ -46,11 +46,12 @@ classdef FileReader < handle
         end
         
         function readMDdata(obj)
+            if isempty(obj.lengthscale)
+                obj.readInitial()
+            end
             extend1 = "_" + int2str(obj.t_index_i) + int2str(obj.t_index_j) +".txt";
             coordinate_file = obj.folder + "jam" + extend1;
             obj.coordinate = csvread(coordinate_file);
-%             length_file = obj.folder + "length" + extend;
-%             obj.lengthscale = csvread(length_file);
             try
                 cal_A_file = obj.folder + "calA" + extend1;
                 cal_A = csvread(cal_A_file);

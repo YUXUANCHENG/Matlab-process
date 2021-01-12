@@ -19,6 +19,8 @@ classdef FlowRate1 < handle
         function rate = cal_rate(obj)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
+            obj.count =  (obj.count - obj.count(1)) * (-1); 
+            
             obj.starttime = find(obj.count > 0);
             if size(obj.starttime,1) > 0
                 obj.starttime = obj.starttime(1);
