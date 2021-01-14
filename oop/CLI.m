@@ -25,7 +25,24 @@ classdef CLI < handle
             %   Detailed explanation goes here
             obj.basefolder = folder;
         end
-        
+    end
+    
+    methods(Static)     
+        function compare_DPM_SP(folderList)
+            for folder = folderList
+                fileReader = FileReader_back();
+                trial = Trial(3,2,folder,fileReader);
+                %trial.plotInitial();
+                trial.readMDdata();
+                trial.plotLastFrame(2);
+                trial.createCalculator();
+                trial.plotVelDistribution();
+                trial.cal_msd();
+                trial.plotMSD();
+                delete(fileReader);
+                delete(trial);
+            end
+        end
         
     end
 end
