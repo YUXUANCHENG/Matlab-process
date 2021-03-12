@@ -4,6 +4,8 @@ classdef Calculator < handle
     
     properties
         trial
+        x_comp
+        y_comp
     end
     
     methods
@@ -14,15 +16,8 @@ classdef Calculator < handle
         end
         
         function [MSD,deltaT] = cal_msd(obj)
-
-            xcomp = zeros(obj.trial.frames, obj.trial.Ncell);
-            ycomp = zeros(obj.trial.frames, obj.trial.Ncell);
-            for i = 1 : obj.trial.frames
-                start_point = 1 + obj.trial.N * ( i - 1 );
-                end_point = obj.trial.N * i;
-                [xcomp_t,ycomp_t] = obj.cal_c_pos(obj.trial.fileReader.coordinate(start_point:end_point,1),obj.trial.fileReader.coordinate(start_point:end_point,2));
-                xcomp(i,:)= xcomp_t;
-                ycomp(i,:)= ycomp_t;
+            if isempty(obj.x_comp)
+                obj.cal_c_pos();
             end
 
             % create MSD array (y-axis of MSD plot)
@@ -33,9 +28,9 @@ classdef Calculator < handle
             % time window size
             for ii = logindex
                 % calculate x displacements, separated by ii indices
-                dx = xcomp(1+ii:end,:) - xcomp(1:end-ii,:);
+                dx = obj.x_comp(1+ii:end,:) - obj.x_comp(1:end-ii,:);
                 % calculate y displacements similarly
-                dy = ycomp(1+ii:end,:) - ycomp(1:end-ii,:);
+                dy = obj.y_comp(1+ii:end,:) - obj.y_comp(1:end-ii,:);
                 % take mean over all displacements
                 dispMean = mean(dx.^2 + dy.^2,'all');
                 % store in MSD array
@@ -46,7 +41,7 @@ classdef Calculator < handle
             deltaT = 1:NT;
         end
         
-        function [xcomp,ycomp] = cal_c_pos(obj, xpos_at_frame, ypos_at_frame)
+        function [xcomp,ycomp] = help_cal_c_pos(obj, xpos_at_frame, ypos_at_frame)
             xcomp = zeros(1, obj.trial.Ncell);
             ycomp = zeros(1, obj.trial.Ncell);
             for ci = 1: obj.trial.Ncell
@@ -60,6 +55,31 @@ classdef Calculator < handle
             end
         end
         
+        function cal_c_pos(obj)
+            obj.x_comp=zeros(obj.trial.frames,obj.trial.Ncell);
+            obj.y_comp=zeros(obj.trial.frames,obj.trial.Ncell);
+            for i = 1 : obj.trial.frames
+                start_point = 1 + obj.trial.N * ( i - 1 );
+                end_point = obj.trial.N * i;
+                [xcomp_t,ycomp_t] = obj.help_cal_c_pos(obj.trial.fileReader.coordinate(start_point:end_point,1),obj.trial.fileReader.coordinate(start_point:end_point,2));
+                obj.x_comp(i,:)= xcomp_t;
+                obj.y_comp(i,:)= ycomp_t;
+            end
+        end
+        
+        function [tran, rota] = cal_trans_rotat(obj)
+            tran = zeros(obj.trial.frames,1);
+            rota = zeros(obj.trial.frames,1);
+            for i = 1 : obj.trial.frames
+                start_point = 1 + obj.trial.Ncell * ( i - 1 );
+                end_point = obj.trial.Ncell * i;
+                total_K = obj.trial.fileReader.vel(start_point:end_point,4);
+                tran_K_fraction = obj.trial.fileReader.vel(start_point:end_point,3);
+                tran_K = tran_K_fraction .* total_K;
+                tran(i) = mean(tran_K, 'all');
+                rota(i) = mean(total_K - tran_K, 'all');
+            end
+        end
     end
 end
 

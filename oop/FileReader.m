@@ -10,6 +10,7 @@ classdef FileReader < handle
         t_index_i
         t_index_j
         vel
+        cal_A
     end
     
     methods
@@ -42,7 +43,7 @@ classdef FileReader < handle
             obj.coordinate = csvread(coordinate_file);
             %length_file = folder + "length" + extend;
             obj.lengthscale = csvread(length_file);
-            cal_A = csvread(cal_A_file);
+            obj.cal_A = csvread(cal_A_file);
         end
         
         function readMDdata(obj)
@@ -54,7 +55,7 @@ classdef FileReader < handle
             obj.coordinate = csvread(coordinate_file);
             try
                 cal_A_file = obj.folder + "calA" + extend1;
-                cal_A = csvread(cal_A_file);
+                obj.cal_A = csvread(cal_A_file);
             catch
                 disp('no calA file')
             end

@@ -1,6 +1,5 @@
 classdef FlowRate3 < FlowRate2
-    %FLOWRATE3 Summary of this class goes here
-    %   Detailed explanation goes here
+    %flow rate with all the particles in the hopper
     
     properties
         originalCount
@@ -11,13 +10,15 @@ classdef FlowRate3 < FlowRate2
         function rate = cal_rate(obj)
             obj.originalCount = obj.count;
             rate = cal_rate@FlowRate2(obj);
+            if size(rate,2) == 1
+                rate = {0, 0};
+            end
         end
         
         function rate = help_cal_rate(obj)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %overide
             if obj.endtime - obj.starttime <= obj.window
-                rate = help_cal_rate@FlowRate1(obj);
+                rate = {help_cal_rate@FlowRate1(obj), obj.originalCount(end)};
             else
                 temp_q = [];
                 temp_c = [];

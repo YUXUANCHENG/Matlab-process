@@ -1,20 +1,18 @@
 classdef FlowRate2 < FlowRate1
-    %FLOWRATE2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %flow rate with specific window size
     
     properties
         window
     end
     
     methods
-        function obj = FlowRate2(count, window)
-            obj = obj@FlowRate1(count);
+        function obj = FlowRate2(calculator, window)
+            obj = obj@FlowRate1(calculator);
             obj.window = window;           
         end
         
         function rate = help_cal_rate(obj)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %overide help function
             if obj.endtime - obj.starttime <= obj.window
                 rate = help_cal_rate@FlowRate1(obj);
             else

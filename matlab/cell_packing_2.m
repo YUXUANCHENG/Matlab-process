@@ -1,6 +1,6 @@
-% clc
-% clear
-% close all
+clc
+clear
+close all
 
 global T1_count;
 global T1_cells;
@@ -16,8 +16,8 @@ qmode = 2;
 periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-basefolder = "~/project/cells98/";
-%basefolder = "~/project/test/";
+%basefolder = "~/project/cells111/";
+basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
@@ -39,9 +39,9 @@ dif = [];
 
 time_scale = (1/5000) * (100000/0.005);
 
-for t_index_i =0:39
+for t_index_i =0:9
     %close all
-    for t_index_j = 2:19
+    for t_index_j = 0:9
 % for t_index_i =0:9
 %     %close all
 %     for t_index_j = 2:2
@@ -108,6 +108,8 @@ for t_index_i =0:39
 %     for i = 1 :frames
 %         start_point = 1 + N * ( i - 1 );
 %         end_point = N * i;
+% %         plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+% %             cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
 %         plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
 %             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2),periodic)
 %     %         frame = getframe(gcf) ;
@@ -351,14 +353,14 @@ for t_index_i =0:39
         end
     end
     
-    if skip == 0
-    Ek = cal_Ek(Ncell, vel(:,4), frames);
-    figure(15), hold on, box on;
-        plot(Ek)
-        ax = gca;
-        %ax.FontSize = 22;
-        %ax.XScale = "log";
-        ax.YScale = "log";
+     if skip == 0
+%     Ek = cal_Ek(Ncell, vel(:,4), frames);
+%     figure(15), hold on, box on;
+%         plot(Ek)
+%         ax = gca;
+%         %ax.FontSize = 22;
+%         %ax.XScale = "log";
+%         ax.YScale = "log";
     i = floor(frames);
     %i = 1;
     start_point = 1 + N * ( i - 1 );
