@@ -5,18 +5,21 @@ addpath FlowRate
 addpath Trial
 addpath CLI
 
-%basefolder = "~/project/cells95/";
-basefolder = "~/project/cells133/";
-
-%folderList = ["~/project/cells102/","~/project/cells101/","~/project/cells100/","~/project/cells94/","~/project/cells98/"];
-%folderList = ["~/project/cells105/","~/project/cells104/","~/project/cells103/","~/project/cells106/"];
+% basefolder = "~/project/cells133/";
+basefolder = "~/project/cells140/";
 % 
-cli = CLI_DPM([]);
+% %folderList = ["~/project/cells102/","~/project/cells101/","~/project/cells100/","~/project/cells94/","~/project/cells98/"];
+% %folderList = ["~/project/cells105/","~/project/cells104/","~/project/cells103/","~/project/cells106/"];
+% % 
+cli = CLI_DPM(basefolder);
+cli.readSysProperty(9, 9, 0, 0);
+cli.plotScalling();
 %folderList = ["~/project/cells134/","~/project/cells135/","~/project/cells113/"];
-folderList = ["~/project/cells107/"];
-%folderList = ["~/project/cells128/","~/project/cells127/", "~/project/cells130/", "~/project/cells129/"];
+%folderList = ["~/project/cells107/"];
+%folderList = ["~/project/cells139/","~/project/cells137/","~/project/cells129/"];
+%folderList = ["~/project/cells76/","~/project/cells98/", "~/project/cells75/"];
 %folderList = ["~/project/cells113/","~/project/cells107/", "~/project/cells110/", "~/project/cells111/"];
-cli.compare(folderList);
+%cli.compare(folderList);
 % % cli = CLI_Disk([]);
 % % folderList = ["~/project/cells116/", "~/project/cells110/"];
 % % %folderList = ["~/project/cells117/"];

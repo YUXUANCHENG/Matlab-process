@@ -41,6 +41,36 @@ classdef Calculator < handle
             deltaT = 1:NT;
         end
         
+        function [ISF,deltaT] = cal_ISF(obj)            
+            if isempty(obj.x_comp)
+                obj.cal_c_pos();
+            end
+            % create MSD array (y-axis of MSD plot)
+            ISF = zeros(round(9 * obj.trial.frames/10),1);
+            NT = length(ISF);
+            q = pi / sqrt(obj.trial.lengthscale(end)*obj.trial.lengthscale(end-1)/(3.14 * obj.trial.Ncell));
+            logindex = unique(round(logspace(0, log10(NT),100)));
+            % loop over the different possible time windows, calculate MSD for each
+            % time window size
+            for ii = logindex
+                % calculate x displacements, separated by ii indices
+                dx = obj.x_comp(1+ii:end,:) - obj.x_comp(1:end-ii,:);
+                % calculate y displacements similarly
+                dy = obj.y_comp(1+ii:end,:) - obj.y_comp(1:end-ii,:);
+                count = 0;
+                isf = 0;
+                for th = 0: 0.1: 2*3.141
+                % take mean over all displacements
+                    isf = isf + mean(real(exp(sqrt(-1) * (cos(th)*q*dx + sin(th)*q*dy))),'all');
+                    count = count + 1;
+                end
+                % store in MSD array
+                ISF(ii) = isf/count;
+            end
+            % create deltaT array, using a for loop or vectorization
+            deltaT = 1:NT;
+        end
+        
         function [xcomp,ycomp] = help_cal_c_pos(obj, xpos_at_frame, ypos_at_frame)
             xcomp = zeros(1, obj.trial.Ncell);
             ycomp = zeros(1, obj.trial.Ncell);

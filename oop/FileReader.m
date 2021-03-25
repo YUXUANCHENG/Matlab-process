@@ -11,6 +11,7 @@ classdef FileReader < handle
         t_index_j
         vel
         cal_A
+        phi
     end
     
     methods
@@ -53,6 +54,8 @@ classdef FileReader < handle
             extend1 = "_" + int2str(obj.t_index_i) + int2str(obj.t_index_j) +".txt";
             coordinate_file = obj.folder + "jam" + extend1;
             obj.coordinate = csvread(coordinate_file);
+            phi_file = obj.folder + "phi" + extend1;
+            obj.phi = csvread(phi_file);
             try
                 cal_A_file = obj.folder + "calA" + extend1;
                 obj.cal_A = csvread(cal_A_file);

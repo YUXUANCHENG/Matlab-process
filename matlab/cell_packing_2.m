@@ -16,8 +16,8 @@ qmode = 2;
 periodic = 1;
 %basefolder = "D:\project\cells1_N\";
 %basefolder = "D:\project\cells38\";
-%basefolder = "~/project/cells111/";
-basefolder = "~/project/test/";
+basefolder = "~/project/cells120/";
+%basefolder = "~/project/test/";
 %basefolder = "~/scratch60/cells47/";
 %basefolder = "~/project/cells48/";
 %basefolder = "C:\Users\Yuxuan Cheng\source\repos\cells\forked-cells\forked-cells\";
@@ -104,18 +104,25 @@ for t_index_i =0:9
         lengthscale(end-1) = 2 * lengthscale(end-1);
         periodic = 0;
     end
-% 
-%     for i = 1 :frames
-%         start_point = 1 + N * ( i - 1 );
-%         end_point = N * i;
-% %         plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
-% %             cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
-%         plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
-%             coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2),periodic)
-%     %         frame = getframe(gcf) ;
-%     %         writeVideo(vobj, frame);
-%     end
-
+    
+    close all
+    vobj = VideoWriter('hopperc.avi');
+    vobj.FrameRate = 10;
+    open(vobj);
+    for i = 1 :frames
+        start_point = 1 + N * ( i - 1 );
+        end_point = N * i;
+%         plot_disk_2d_c(2,[lengthscale(end-1),lengthscale(end)],...
+%             cal_A,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2), lengthscale, periodic)
+        plot_particles_2d(2,[lengthscale(end-1),lengthscale(end)],...
+            coordinate(start_point:end_point,3)/2,coordinate(start_point:end_point,1),coordinate(start_point:end_point,2),periodic)
+             set(gcf,'color','w');
+             frame = getframe(gcf) ;
+             writeVideo(vobj, frame);
+    end
+    close(vobj);
+    close all
+    
     i = frames;
     start_point = 1 + N * ( i - 1 );
     end_point = N * i;

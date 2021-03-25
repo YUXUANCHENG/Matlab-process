@@ -24,6 +24,11 @@ classdef Trial_DPM < handle
         MSD
         deltaT
         logindex
+        ISF
+        tao
+        Temp
+        phi
+        mean_phi
     end
     
     methods
@@ -59,6 +64,11 @@ classdef Trial_DPM < handle
             obj.calA0 = obj.fileReader.v0(5);
         end
         
+        function readPhi(obj)
+            obj.phi = obj.fileReader.phi;
+            obj.mean_phi = mean(obj.phi,'all');
+        end
+        
         function plotInitial(obj)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
@@ -83,6 +93,7 @@ classdef Trial_DPM < handle
         function plotVelDistribution(obj)
             vel_s = sqrt(obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)/obj.fileReader.lengthscale(end);
             %vel_s = obj.fileReader.vel(:,2)/obj.fileReader.lengthscale(end);
+            obj.Temp = mean(vel_s,'all')^2;
             figure(8), hold on, box on;
             set(gcf,'color','w');
             h = histogram(vel_s,'BinWidth',5e-5, 'Normalization', 'probability');
@@ -116,6 +127,9 @@ classdef Trial_DPM < handle
         
         function rescaleMSD(obj)
             obj.MSD = obj.MSD/(obj.fileReader.lengthscale(end)^2);
+        end
+        
+        function rescaleTime(obj)
             time_scale = (1/5000) * (100000/0.005);
             obj.deltaT = obj.deltaT * time_scale;
         end
@@ -124,6 +138,14 @@ classdef Trial_DPM < handle
             [obj.MSD, obj.deltaT] = obj.calculator.cal_msd();
             obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),1000)));
             obj.rescaleMSD();
+            obj.rescaleTime();
+        end
+        
+        function cal_ISF(obj)
+            [obj.ISF, obj.deltaT] = obj.calculator.cal_ISF();
+            obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),100)));
+            %obj.rescaleTime();
+            obj.deltaT = obj.deltaT./(10^3);
         end
         
         function plotMSD(obj)
@@ -155,6 +177,25 @@ classdef Trial_DPM < handle
             disp(["difusion: ", (10^P(2))/(4 * 0.005), " +- ", (10^P(2) * log(10) * uncertainty(2))/(4*0.005)])
             disp(["slope: ", P(1), "+- ", uncertainty(1)])
             disp(["intercept: ", P(2), "+- ", uncertainty(2)])
+        end
+        
+        function plotISF(obj)           
+            half = ceil(length(obj.logindex)/10);
+            fitfun = fittype( @(tao, b, x) exp(-abs(x/tao).^b));
+            %fitted = fit( (obj.logindex(half:end))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - obj.t_index_j),1]);
+            fitted = fit( (obj.deltaT(obj.logindex(half:end)))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [0.1,1]);
+            obj.tao = abs(fitted.tao);
+            
+            figure((obj.t_index_j+1)*10+3)
+            set(gcf,'color','w');
+            hold on, box on;
+            scatter(obj.deltaT(obj.logindex), obj.ISF(obj.logindex),25,'filled');
+            %plot(fitted,(obj.logindex(half:end)), obj.ISF(obj.logindex(half:end)));
+            plot(fitted,(obj.deltaT(obj.logindex(half:end))), obj.ISF(obj.logindex(half:end)));
+            xlabel('time');ylabel('ISF');
+            ax = gca;
+            ax.XScale = "log";
+            ax.YScale = "Linear";
         end
         
         function showVideo(obj, tFrame)
