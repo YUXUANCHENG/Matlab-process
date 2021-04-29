@@ -45,33 +45,35 @@ classdef CLI_DPM < handle
                 %trial.plotCalADistribution();
                 %trial.cal_msd();
                 %trial.plotMSD();
-                trial.cal_ISF();
-                trial.plotISF();
+                %trial.cal_ISF();
+                %trial.plotISF();
+                trial.calculator.cal_c_pos();
+                trial.verifyISF(3);
+                trial.cleanUp();
         end       
         
         function compare(obj, folderList)
             for folder = folderList
-                trial = obj.createTrial(folder, 9, 5);
-                %obj.createTrial(folder, 1, 3);
+                trial = obj.createTrial(folder, 0, 5);
                 obj.pipline(trial);
             end
         end
         
         function plotScalling(obj)
             figure(3); hold on
-            for i = 1:10
+            for i = 1:1
                 T = [];
                 tao = [];
-                for j = 1:10
-                    T = [T, obj.sysProperty{i,j}.Temp];
-                    tao = [tao, obj.sysProperty{i,j}.tao];
+                for j = 2:10
+                    T = [T, obj.sysProperty{i,j}.Temp * (obj.sysProperty{i,j}.lengthscale(end))^2];
+                    tao = [tao, obj.sysProperty{i,j}.tao *10^3*100000/5000];
                 end
                 plot(1./T,tao.*sqrt(T));
             end
             ax = gca;
             ax.XScale = "log";
             ax.YScale = "log";
-            xlabel('1/v^2');ylabel('tao * v');
+            xlabel('1/T');ylabel('tao * sqrt(T)');
         end
         
         function readSysProperty(obj,index_i, index_j, index_i_s, index_j_s)
@@ -89,6 +91,27 @@ classdef CLI_DPM < handle
                     end
                 end
             end
+        end
+        
+        function readTao(obj)
+            figure(3); hold on; box on;
+            set(gcf,'color','w');
+            for t_index_i = 0 :9
+                v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
+                try
+                v = csvread(v0_file);
+                v = sortrows(v, 8);
+                T = v(:,8).^2;
+                tao = v(:,7);
+                plot(1./T, tao .* sqrt(T));
+                catch
+                    disp('no v0');
+                end
+            end
+            ax = gca;
+            ax.XScale = "log";
+            ax.YScale = "log";
+            xlabel('1/T');ylabel('tao * sqrt(T)');
         end
         
     end

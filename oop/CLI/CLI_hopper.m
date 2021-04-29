@@ -4,6 +4,8 @@ classdef CLI_hopper < CLI_DPM
     
     properties
         hopperProperty = []
+        a
+        b
     end
     
     methods
@@ -23,8 +25,8 @@ classdef CLI_hopper < CLI_DPM
                         trial = Trial_hopper(t_index_i,t_index_j,obj.basefolder,fileReader);
                         %trial.plotInitial();
                         trial.readV0();
-%                         trial.readMDdata();
-%                         trial.plotLastFrame(2);
+                        trial.readMDdata();
+                        trial.plotLastFrame(2);
 %                         trial.showVideo(20);
                         %trial.createCalculator();
                         %trial.printCellCount();
@@ -36,7 +38,7 @@ classdef CLI_hopper < CLI_DPM
                         delete(fileReader);
                         continue
                     end
-                    delete(fileReader);
+                    trial.cleanUp();
                 end
             end
         end
@@ -176,12 +178,39 @@ classdef CLI_hopper < CLI_DPM
                 clog_p = [clog_p, mean(results)];
                 error = [error, std(results)/sqrt(size(results, 2))];
             end
-            figure(4); hold on;
+            fitfun = fittype( @(a, b, x) 1 ./ (1 + exp( (x - a) ./ b)));
+            %fitted = fit( (obj.logindex(half:end))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - obj.t_index_j),1]);
+            fitted = fit(width', clog_p', fitfun, 'StartPoint', [1,0.1]);
+            disp({'a = ', fitted.a, ' b = ', fitted.b})
+            obj.a = fitted.a;
+            obj.b = fitted.b;
+            %obj.tao = abs(fitted.tao);
+            figure(4); hold on; box on;
+            set(gcf,'color','w');
             errorbar(width,clog_p,error,'o')
             %errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
+            plot(fitted);
             xlabel("width");
             %xlabel("alpha");
             ylabel("clogging probability");
+        end
+        
+        function compare(obj, folderList)
+            a_list = [];
+            b_list = [];
+            for folder = folderList
+                obj.basefolder = folder;
+                obj.calHopperProperty(99, 39, 4, 50);
+                obj.plotClogP();
+                a_list = [a_list, obj.a];
+                b_list = [b_list, obj.b];
+            end
+            figure(5);
+            scatter([10,1,0.1,0.01],a_list,25,'filled');
+            xlabel('kb');ylabel('a');
+            ax = gca;
+            ax.XScale = "log";
+            ax.YScale = "Linear";
         end
     end
 end

@@ -54,9 +54,9 @@ classdef Calculator < handle
             % time window size
             for ii = logindex
                 % calculate x displacements, separated by ii indices
-                dx = obj.x_comp(1+ii:end,:) - obj.x_comp(1:end-ii,:);
+                dx = obj.x_comp(obj.trial.offset+ii:end,:) - obj.x_comp(obj.trial.offset:end-ii,:);
                 % calculate y displacements similarly
-                dy = obj.y_comp(1+ii:end,:) - obj.y_comp(1:end-ii,:);
+                dy = obj.y_comp(obj.trial.offset+ii:end,:) - obj.y_comp(obj.trial.offset:end-ii,:);
                 count = 0;
                 isf = 0;
                 for th = 0: 0.1: 2*3.141

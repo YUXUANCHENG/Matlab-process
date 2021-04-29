@@ -29,6 +29,7 @@ classdef Trial_DPM < handle
         Temp
         phi
         mean_phi
+        offset = 1
     end
     
     methods
@@ -91,9 +92,10 @@ classdef Trial_DPM < handle
         end
         
         function plotVelDistribution(obj)
-            vel_s = sqrt(obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)/obj.fileReader.lengthscale(end);
+            speed = (obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)./(obj.fileReader.lengthscale(end)^2);
+            vel_s = sqrt(speed);
             %vel_s = obj.fileReader.vel(:,2)/obj.fileReader.lengthscale(end);
-            obj.Temp = mean(vel_s,'all')^2;
+            obj.Temp = mean(speed,'all');
             figure(8), hold on, box on;
             set(gcf,'color','w');
             h = histogram(vel_s,'BinWidth',5e-5, 'Normalization', 'probability');
@@ -180,18 +182,22 @@ classdef Trial_DPM < handle
         end
         
         function plotISF(obj)           
-            half = ceil(length(obj.logindex)/10);
-            fitfun = fittype( @(tao, b, x) exp(-abs(x/tao).^b));
-            %fitted = fit( (obj.logindex(half:end))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - obj.t_index_j),1]);
-            fitted = fit( (obj.deltaT(obj.logindex(half:end)))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [0.1,1]);
-            obj.tao = abs(fitted.tao);
+% %             half = ceil(length(obj.logindex)/10);
+%               half = 1;
+% %             %fitfun = fittype( @(tao, b, A, x) A.*exp(-abs(x/tao).^b));
+%              fitfun = fittype( @(tao, b, x) exp(-abs(x/tao).^b));
+% %             %fitted = fit( (obj.logindex(half:end))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - obj.t_index_j),1]);
+% %             %fitted = fit( (obj.deltaT(obj.logindex(half:end)))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [0.1,1,0.9]);
+%              fitted = fit( (obj.deltaT(obj.logindex(half:end)))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [0.1,1]);
+%              obj.tao = abs(fitted.tao);
+            tao_index = find(obj.ISF(obj.logindex) < exp(-1),1);
+            obj.tao = obj.deltaT(obj.logindex(tao_index));
             
             figure((obj.t_index_j+1)*10+3)
             set(gcf,'color','w');
             hold on, box on;
             scatter(obj.deltaT(obj.logindex), obj.ISF(obj.logindex),25,'filled');
-            %plot(fitted,(obj.logindex(half:end)), obj.ISF(obj.logindex(half:end)));
-            plot(fitted,(obj.deltaT(obj.logindex(half:end))), obj.ISF(obj.logindex(half:end)));
+            %plot(fitted,(obj.deltaT(obj.logindex(half:end))), obj.ISF(obj.logindex(half:end)));
             xlabel('time');ylabel('ISF');
             ax = gca;
             ax.XScale = "log";
@@ -224,6 +230,20 @@ classdef Trial_DPM < handle
             close(vobj);
         end
         
+        function verifyISF(obj, seg)
+            seg_length = floor(obj.frames / seg);
+            obj.frames = seg_length;
+            for i = 1: seg
+                obj.offset = 1 + (i - 1) * seg_length;
+                obj.cal_ISF();
+                obj.plotISF();
+            end
+        end
+        
+        function cleanUp(obj)
+            delete(obj.fileReader);
+        end
+        
         function plot_particles_2d_c(obj, fig, L, r_f, x_f, y_f)
             % determine colors
             c       = zeros(obj.Ncell,3);
@@ -238,6 +258,7 @@ classdef Trial_DPM < handle
             c = jet(obj.Ncell);
             c(1,:) = [0,0,0];
             figure(fig), clf, hold on, box on;
+            set(gcf,'color','w');
             axis('equal');
 
             if (obj.periodic == 1)
