@@ -17,6 +17,7 @@ classdef CLI_hopper < CLI_DPM
         
         function HopperProperty(obj,index_i, index_j, index_i_s, index_j_s, mode, varargin)
             %METHOD1 Summary of this method goes here
+            obj.hopperProperty = [];
             %   Detailed explanation goes here
             for t_index_i = index_i_s: index_i
                 for t_index_j = index_j_s: index_j
@@ -26,12 +27,13 @@ classdef CLI_hopper < CLI_DPM
                         %trial.plotInitial();
                         trial.readV0();
                         trial.readMDdata();
-                        trial.plotLastFrame(2);
-%                         trial.showVideo(20);
-                        %trial.createCalculator();
-                        %trial.printCellCount();
-                        %trial.plotEk();
-                        %trial.flowRate(mode,varargin);
+                        %trial.plotLastFrame(2);
+                        %trial.showVideo(50);
+                        %trial.saveVideo(50);
+                        trial.createCalculator();
+                        trial.printCellCount();
+                        trial.plotEk();
+                        trial.flowRate(mode,varargin);
                         obj.hopperProperty = [obj.hopperProperty, trial];
                     catch e
                         fprintf(1,"%s", e.message);
@@ -113,25 +115,26 @@ classdef CLI_hopper < CLI_DPM
                     error = [error, std(rate_temp)/sqrt(length(rate_temp))];
                 end   
                 figure(3);hold on;
-                errorbar(N_left*w,flowRate,error,'o')
+                errorbar(N_left/w,flowRate/w,error,'o')
+                %scatter(N_left/w,flowRate/w,'o')
                 %plot(N_left,flowRate,'o')
                 %errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
-                xlabel("N*width");
-                ylabel("flow rate");  
+                xlabel("N/width");
+                ylabel("flux");  
             end
             legend(string(width));
         end
         
         function plotFlowRateWithN(obj)
-            flowRate = [];
-            error = [];
             width = [];
             for i = 1: length(obj.hopperProperty)
                 width = [width, obj.hopperProperty(i).width];
             end
             width = unique(width);
-            %for w = width
-            for w = width(end)
+            for w = width
+                flowRate = [];
+                error = [];
+            %for w = width(end)
                 N_left = [];
                 for i = 1: length(obj.hopperProperty)
                     if obj.hopperProperty(i).width == w
@@ -152,12 +155,14 @@ classdef CLI_hopper < CLI_DPM
                     flowRate = [flowRate, mean(rate_temp)];
                     error = [error, std(rate_temp)/sqrt(length(rate_temp))];
                 end                
+            
+                figure(3);hold on;
+                errorbar(N_left,flowRate,error,'o')
+                %errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
+                xlabel("N left inside");
+                ylabel("flow rate");   
             end
-            figure(3);
-            errorbar(N_left,flowRate,error,'o')
-            %errorbar(1 - gam/(clog(1,1)*lengthscale(1,1)*coordinate(1,3)),clog_p,error,'o')
-            xlabel("N left");
-            ylabel("flow rate");              
+            legend(string(width));
         end
         
         function plotClogP(obj)

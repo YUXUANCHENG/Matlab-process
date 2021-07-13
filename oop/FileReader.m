@@ -12,6 +12,7 @@ classdef FileReader < handle
         vel
         cal_A
         phi
+        isfData
     end
     
     methods
@@ -39,8 +40,11 @@ classdef FileReader < handle
             cal_A_file = obj.folder + "calA" + extend;
             contact_file = obj.folder + "contact" + extend;
 
-            packing_contact = dlmread(contact_file);
-            packing_contact = packing_contact(end,:);
+            try
+                packing_contact = dlmread(contact_file);
+                packing_contact = packing_contact(end,:);
+            catch
+            end
             obj.coordinate = csvread(coordinate_file);
             %length_file = folder + "length" + extend;
             obj.lengthscale = csvread(length_file);
@@ -70,6 +74,12 @@ classdef FileReader < handle
             end
             v_file = obj.folder + "v" + extend1;
             obj.vel = csvread(v_file);
+        end
+        
+        function readTao(obj)
+            extend = "_" + int2str(obj.t_index_i) + int2str(obj.t_index_j) +".txt";
+            ISF_file = obj.folder + "isf" + extend;
+            obj.isfData = csvread(ISF_file);
         end
     end
 end

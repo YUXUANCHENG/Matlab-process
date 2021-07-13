@@ -84,6 +84,10 @@ classdef Trial_DPM < handle
             obj.getMDinfo();
         end
         
+        function readTao(obj)
+            obj.fileReader.readTao();
+        end
+        
         function plotLastFrame(obj, num)
             i = floor(obj.frames);
             start_point = 1 + obj.N * ( i - 1 );
@@ -204,6 +208,21 @@ classdef Trial_DPM < handle
             ax.YScale = "Linear";
         end
         
+        function plotTaoData(obj)
+            length = size(obj.fileReader.isfData, 1);
+            for i = 1: length/2
+                figure(i)
+                set(gcf,'color','w');
+                hold on, box on;
+                scatter(obj.fileReader.isfData(i*4 - 3,:), obj.fileReader.isfData(i*4 - 2,:),25,'filled');
+                scatter(obj.fileReader.isfData(i*4 - 1,:), obj.fileReader.isfData(i*4,:),25,'filled');
+                xlabel('time');ylabel('ISF');
+                ax = gca;
+                ax.XScale = "log";
+                ax.YScale = "Linear";
+            end
+        end
+        
         function showVideo(obj, tFrame)
             for i = 1 : ceil(obj.frames/tFrame) : obj.frames
                 start_point = 1 + obj.N * ( i - 1 );
@@ -237,6 +256,8 @@ classdef Trial_DPM < handle
                 obj.offset = 1 + (i - 1) * seg_length;
                 obj.cal_ISF();
                 obj.plotISF();
+%                 obj.cal_msd();
+%                 obj.plotMSD();
             end
         end
         
@@ -266,7 +287,9 @@ classdef Trial_DPM < handle
                 x_f = mod(x_f,L(1));
                 y_f = mod(y_f,L(2));
             else
-                axis([0 L(1)*1.1 0 L(2)]);
+                %axis([0 L(1)*1.1 0 L(2)]);
+                %axis([7 10 0 2]);
+                axis([-L(1) * 6.5 L(1)*1.1 0 L(2)]);
             end
 
             for ci = 1:obj.Ncell

@@ -23,7 +23,7 @@ classdef Trial_hopper < Trial_DPM
         
         function readInitial(obj)
             readInitial@Trial(obj);
-            obj.hopperDataProcess();
+            %obj.hopperDataProcess();
         end
         
         function readV0(obj)
@@ -37,7 +37,7 @@ classdef Trial_hopper < Trial_DPM
         
         function readMDdata(obj)
             readMDdata@Trial_DPM(obj);
-            obj.hopperDataProcess();
+            %obj.hopperDataProcess();
         end
         
         function createCalculator(obj)
