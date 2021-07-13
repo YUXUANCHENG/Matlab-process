@@ -38,9 +38,12 @@ classdef FileReader < handle
             length_file = obj.folder + "length" + extend;
             cal_A_file = obj.folder + "calA" + extend;
             contact_file = obj.folder + "contact" + extend;
-
-            packing_contact = dlmread(contact_file);
-            packing_contact = packing_contact(end,:);
+            
+            try
+                packing_contact = dlmread(contact_file);
+                packing_contact = packing_contact(end,:);
+            catch
+            end
             obj.coordinate = csvread(coordinate_file);
             %length_file = folder + "length" + extend;
             obj.lengthscale = csvread(length_file);

@@ -96,14 +96,21 @@ classdef CLI_DPM < handle
         function readTao(obj)
             figure(3); hold on; box on;
             set(gcf,'color','w');
+            phi = 0.7:0.02:0.7+9*0.02;
+            phi0 = 0.849;
+            mu = 1.30;
+            %del = 1.95;
+            del = 2.9;
             for t_index_i = 0 :9
                 v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
                 try
                 v = csvread(v0_file);
                 v = sortrows(v, 8);
+                v = v(1:end-1,:);
                 T = v(:,8).^2;
                 tao = v(:,7);
                 plot(1./T, tao .* sqrt(T));
+                %scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
                 catch
                     disp('no v0');
                 end

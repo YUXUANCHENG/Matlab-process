@@ -5,15 +5,15 @@ addpath FlowRate
 addpath Trial
 addpath CLI
 
-basefolder = "~/project/cells149/";
+basefolder = "~/project/cells162/";
 %basefolder = "~/project/cells148/";
 % 
 % %folderList = ["~/project/cells102/","~/project/cells101/","~/project/cells100/","~/project/cells94/","~/project/cells98/"];
 % %folderList = ["~/project/cells105/","~/project/cells104/","~/project/cells103/","~/project/cells106/"];
-% % % 
-cli = CLI_DPM(basefolder);
-cli.readTao();
-% cli.readSysProperty(0, 9, 0, 0);
+% % % % 
+% cli = CLI_DPM(basefolder);
+% cli.readTao();
+%cli.readSysProperty(0, 9, 0, 0);
 
 % cli.plotScalling();
 %folderList = ["~/project/cells134/","~/project/cells135/","~/project/cells113/"];
@@ -27,8 +27,8 @@ cli.readTao();
 % % %folderList = ["~/project/cells117/"];
 % % cli.compare(folderList);
 
-% cli = CLI_hopper(basefolder);
-% cli.calHopperProperty(99, 39, 4, 50);
+cli = CLI_hopper(basefolder);
+%cli.calHopperProperty(99, 39, 4, 50);
 % cli.plotClogP();
 % folderList = ["~/project/cells123/","~/project/cells143/","~/project/cells145/","~/project/cells146/"];
 % cli.compare(folderList);
@@ -39,6 +39,6 @@ cli.readTao();
 % cli.calHopperProperty(39, 19, 2, 50);
 % cli.plotFlowRate();
 
-%cli.HopperProperty(99, 39, 0, 38, 4, 50);
+cli.HopperProperty(99, 39, 0, 39, 4, 50);
 % cli.plotFlowRateWithN()
 % cli.plotFlowRateVSN_W()

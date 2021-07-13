@@ -219,7 +219,7 @@ classdef Trial_DPM < handle
             vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".avi");
             vobj.FrameRate = 5;
             open(vobj);
-            for i = 100 : ceil(obj.frames/tFrame) : obj.frames
+            for i = 1 : ceil(obj.frames/tFrame) : obj.frames
                 start_point = 1 + obj.N * ( i - 1 );
                 end_point = obj.N * i;
                 obj.plotConfig(2, start_point, end_point);
@@ -266,7 +266,9 @@ classdef Trial_DPM < handle
                 x_f = mod(x_f,L(1));
                 y_f = mod(y_f,L(2));
             else
-                axis([0 L(1)*1.1 0 L(2)]);
+                %axis([0 L(1)*1.1 0 L(2)]);
+                axis([-L(2)*4 L(1)*1.1 0 L(2)]);
+                %axis([0 3 0 2]);
             end
 
             for ci = 1:obj.Ncell
