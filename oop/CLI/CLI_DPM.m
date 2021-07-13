@@ -33,23 +33,25 @@ classdef CLI_DPM < handle
         end
 
         function pipline(obj, trial)
-                %trial.plotInitial();
-                trial.readMDdata();
-                trial.plotLastFrame(2);
-                %trial.showVideo(20);
-                %trial.saveVideo(50);
-                trial.createCalculator();
-                trial.plotVelDistribution();
-                trial.readPhi();
-                %trial.plotRotationVsTranslaion();
-                %trial.plotCalADistribution();
-                %trial.cal_msd();
-                %trial.plotMSD();
-                %trial.cal_ISF();
-                %trial.plotISF();
-                trial.calculator.cal_c_pos();
-                trial.verifyISF(3);
-                trial.cleanUp();
+%                 trial.plotInitial();
+%                 trial.readMDdata();
+%                 trial.plotLastFrame(2);
+%                 trial.showVideo(20);
+%                 %trial.saveVideo(50);
+%                 trial.createCalculator();
+%                 trial.plotVelDistribution();
+%                 trial.readPhi();
+%                 %trial.plotRotationVsTranslaion();
+%                 %trial.plotCalADistribution();
+%                 %trial.cal_msd();
+%                 %trial.plotMSD();
+%                 %trial.cal_ISF();
+%                 %trial.plotISF();
+%                 trial.calculator.cal_c_pos();
+%                 trial.verifyISF(3);
+%                 trial.cleanUp();
+                 trial.readTao();
+                 trial.plotTaoData();
         end       
         
         function compare(obj, folderList)
@@ -97,7 +99,7 @@ classdef CLI_DPM < handle
             figure(3); hold on; box on;
             set(gcf,'color','w');
             phi = 0.7:0.02:0.7+9*0.02;
-            phi0 = 0.849;
+            phi0 = 0.759;
             mu = 1.30;
             %del = 1.95;
             del = 2.9;

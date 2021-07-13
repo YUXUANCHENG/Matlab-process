@@ -12,6 +12,7 @@ classdef FileReader < handle
         vel
         cal_A
         phi
+        isfData
     end
     
     methods
@@ -73,6 +74,12 @@ classdef FileReader < handle
             end
             v_file = obj.folder + "v" + extend1;
             obj.vel = csvread(v_file);
+        end
+        
+        function readTao(obj)
+            extend = "_" + int2str(obj.t_index_i) + int2str(obj.t_index_j) +".txt";
+            ISF_file = obj.folder + "isf" + extend;
+            obj.isfData = csvread(ISF_file);
         end
     end
 end
