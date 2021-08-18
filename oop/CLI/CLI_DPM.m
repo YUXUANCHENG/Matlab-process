@@ -34,17 +34,19 @@ classdef CLI_DPM < handle
 
         function pipline(obj, trial)
 %                 trial.plotInitial();
-%                 trial.readMDdata();
-%                 trial.plotLastFrame(2);
+                 trial.readMDdata();
+                 trial.setMaxFrames(10000);
+                 trial.plotLastFrame(2);
 %                 trial.showVideo(20);
-%                 %trial.saveVideo(50);
-%                 trial.createCalculator();
+%                 %trial.saveVideo(50);    
+                trial.createCalculator();
+                trial.plotTrajectory(50);
 %                 trial.plotVelDistribution();
 %                 trial.readPhi();
 %                 %trial.plotRotationVsTranslaion();
 %                 %trial.plotCalADistribution();
-%                 %trial.cal_msd();
-%                 %trial.plotMSD();
+                trial.cal_msd();
+                trial.plotMSD();
 %                 %trial.cal_ISF();
 %                 %trial.plotISF();
 %                 trial.calculator.cal_c_pos();
@@ -99,10 +101,10 @@ classdef CLI_DPM < handle
             figure(3); hold on; box on;
             set(gcf,'color','w');
             phi = 0.7:0.02:0.7+9*0.02;
-            phi0 = 0.759;
-            mu = 1.30;
+            phi0 = 0.779;
+            mu = 1.25;
             %del = 1.95;
-            del = 2.9;
+            del = 2.2;
             for t_index_i = 0 :9
                 v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
                 try
@@ -111,8 +113,8 @@ classdef CLI_DPM < handle
                 v = v(1:end-1,:);
                 T = v(:,8).^2;
                 tao = v(:,7);
-                plot(1./T, tao .* sqrt(T));
-                %scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
+                %plot(1./T, tao .* sqrt(T));
+                scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
                 catch
                     disp('no v0');
                 end

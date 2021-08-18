@@ -136,7 +136,8 @@ classdef Trial_DPM < handle
         end
         
         function rescaleTime(obj)
-            time_scale = (1/5000) * (100000/0.005);
+%             time_scale = (1/5000) * (100000/0.005);
+            time_scale = (1/2000) * (10000/0.005);
             obj.deltaT = obj.deltaT * time_scale;
         end
         
@@ -145,6 +146,12 @@ classdef Trial_DPM < handle
             obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),1000)));
             obj.rescaleMSD();
             obj.rescaleTime();
+        end
+        
+        function setMaxFrames(obj, maxFrames)
+            if obj.frames > maxFrames
+                obj.frames = maxFrames;
+            end
         end
         
         function cal_ISF(obj)
@@ -249,6 +256,34 @@ classdef Trial_DPM < handle
                 writeVideo(vobj, frame);
             end
             close(vobj);
+        end
+        
+        function plotTrajectory(obj, tFrame)
+            if isempty(obj.calculator.x_comp)
+                obj.calculator.cal_c_pos();
+            end
+            
+            freq = floor(obj.frames/tFrame);
+            figure(6)
+            set(gcf,'color','w');
+            hold on, box on;
+            
+            L = [obj.lengthscale(end-1),obj.lengthscale(end)];
+            axis([0 L(1) 0 L(2)]);
+%             x_f = mod(obj.calculator.x_comp,L(1));
+%             y_f = mod(obj.calculator.y_comp,L(2));
+            x_f = obj.calculator.x_comp;
+            y_f = obj.calculator.y_comp;
+            
+            for ci = 1: obj.Ncell
+                %plot(obj.calculator.x_comp(1:freq:end,ci),obj.calculator.y_comp(1:freq:end,ci))
+                for i_dir = [-2, -1, 0, 1, 2]
+                    for j_dir = [-2, -1, 0, 1, 2]
+                        plot(x_f(1:freq:end,ci) + L(1) * i_dir, y_f(1:freq:end,ci) + L(2) * j_dir)
+                    end
+                end
+            end
+            
         end
         
         function verifyISF(obj, seg)
