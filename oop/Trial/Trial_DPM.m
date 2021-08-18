@@ -235,7 +235,9 @@ classdef Trial_DPM < handle
             loc = strfind(obj.basefolder,'/');
             name = extractAfter(obj.basefolder,loc(2));
             name = extractBefore(name,'/');
-            vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".avi");
+            vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".avi", 'Motion JPEG AVI');
+%             vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".avi");
+%             vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".mp4", 'MPEG-4');
             vobj.FrameRate = 5;
             open(vobj);
             for i = 1 : ceil(obj.frames/tFrame) : obj.frames

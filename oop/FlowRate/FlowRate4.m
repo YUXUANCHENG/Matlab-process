@@ -16,7 +16,7 @@ classdef FlowRate4 < FlowRate3
                 temp_c = [];
                 for time_point = obj.starttime : obj.window : obj.endtime - obj.window
                     temp_rate = (obj.count(time_point + obj.window)-obj.count(time_point))/obj.window;
-                    if temp_rate > 0
+                    if temp_rate >= 0
                         temp_q = [temp_q, temp_rate];
                         temp_c = [temp_c, obj.calculator.aboveOpenning(time_point + floor(obj.window/2))];
                     end

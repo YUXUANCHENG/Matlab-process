@@ -7,6 +7,7 @@ classdef Calculator_hopper < Calculator
         aboveOpenning
         deltaT
         flowRateCalculator
+        density
     end
     
     methods
@@ -62,6 +63,33 @@ classdef Calculator_hopper < Calculator
                 obj.flowRateCalculator = FlowRate4(obj, varargin{1}{1});
             end
             rate = obj.flowRateCalculator.cal_rate();
+        end
+        
+        function density = calDensity(obj, timeWindow, heightWindow)
+            density = {};
+            numberInHopper = [];
+            height = [];
+            densittAtHeight = [];
+            count1 = 0;
+            for ii = 1: timeWindow: length(obj.count)
+                %if (size(numberInHopper,2) > 0) && (obj.count(ii) == numberInHopper(end))
+                if ismember(obj.count(ii), numberInHopper) || obj.count(ii) == obj.count(1)
+                    continue
+                end
+                
+                for xx = 0 : -heightWindow : -obj.trial.lengthscale(end) * 3
+                    % x axis, # particles in hopper
+                    numberInHopper= [numberInHopper, obj.count(ii)];
+                    height = [height, xx];
+                    num = sum(obj.x_comp(ii,:) < xx & obj.x_comp(ii,:) > xx - heightWindow);
+                    densittAtHeight= [densittAtHeight, num/(obj.trial.lengthscale(end)*heightWindow)];
+                end
+                count1 = count1 + 1;
+            end
+            density{1} = numberInHopper;
+            density{2} = height;
+            density{3} = densittAtHeight;  
+            density{4} = count1;
         end
         
         function Ek = cal_Ek(obj)

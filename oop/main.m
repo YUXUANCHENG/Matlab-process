@@ -13,7 +13,7 @@ basefolder = "~/project/cells162/";
 % % % % 
 % cli = CLI_DPM(basefolder);
 % cli.readTao();
-%cli.readSysProperty(0, 9, 0, 0);
+% cli.readSysProperty(9, 11, 0, 11);
 
 % cli.plotScalling();
 %folderList = ["~/project/cells134/","~/project/cells135/","~/project/cells113/"];
@@ -39,6 +39,6 @@ cli = CLI_hopper(basefolder);
 % cli.calHopperProperty(39, 19, 2, 50);
 % cli.plotFlowRate();
 
-cli.HopperProperty(99, 39, 0, 39, 4, 50);
+cli.HopperProperty(99, 39, 0, 0, 3, 50);
 % cli.plotFlowRateWithN()
 % cli.plotFlowRateVSN_W()
