@@ -28,7 +28,7 @@ cli.readTao();
 % % cli.compare(folderList);
 
 cli = CLI_hopper(basefolder);
-% cli.calHopperProperty(99, 39, 4, 50);
+%cli.calHopperProperty(99, 39, 4, 50);
 % cli.plotClogP();
 % folderList = ["~/project/cells145/","~/project/cells146/","~/project/cells143/","~/project/cells144/","~/project/cells133/","~/project/cells123/"];
 % cli.compare(folderList);
@@ -39,6 +39,6 @@ cli = CLI_hopper(basefolder);
 % cli.calHopperProperty(39, 19, 2, 50);
 % cli.plotFlowRate();
 
-cli.HopperProperty(99, 39, 0, 38, 3, 20);
+cli.HopperProperty(99, 39, 0, 39, 4, 50);
 % cli.plotFlowRateWithN()
 % cli.plotFlowRateVSN_W()
