@@ -33,17 +33,17 @@ classdef CLI_DPM < handle
         end
 
         function pipline(obj, trial)
-%                 trial.plotInitial();
+                trial.plotInitial();
                  trial.readMDdata();
                  trial.setMaxFrames(10000);
                  trial.plotLastFrame(2);
-%                 trial.showVideo(20);
-%                 %trial.saveVideo(50);    
+                %trial.showVideo(20);
+                %trial.saveVideo(50);    
                 trial.createCalculator();
                 trial.plotTrajectory(50);
-%                 trial.plotVelDistribution();
-%                 trial.readPhi();
-%                 %trial.plotRotationVsTranslaion();
+                trial.plotVelDistribution();
+                trial.readPhi();
+                trial.plotRotationVsTranslaion();
 %                 %trial.plotCalADistribution();
                 trial.cal_msd();
                 trial.plotMSD();
@@ -52,8 +52,8 @@ classdef CLI_DPM < handle
 %                 trial.calculator.cal_c_pos();
 %                 trial.verifyISF(3);
 %                 trial.cleanUp();
-                 trial.readTao();
-                 trial.plotTaoData();
+%                  trial.readTao();
+%                  trial.plotTaoData();
         end       
         
         function compare(obj, folderList)
@@ -97,24 +97,27 @@ classdef CLI_DPM < handle
             end
         end
         
-        function readTao(obj)
+        function readTao(obj,mode, phi0, mu, del)
             figure(3); hold on; box on;
             set(gcf,'color','w');
-            phi = 0.7:0.02:0.7+9*0.02;
-            phi0 = 0.779;
-            mu = 1.25;
-            %del = 1.95;
-            del = 2.2;
+            phi = 0.7:0.015:0.7+9*0.015;
             for t_index_i = 0 :9
                 v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
+                length_file = obj.basefolder + int2str(t_index_i) + "/" + "length_jammed_" + int2str(t_index_i) + ".txt";
                 try
                 v = csvread(v0_file);
                 v = sortrows(v, 8);
-                v = v(1:end-1,:);
-                T = v(:,8).^2;
+                length = csvread(length_file);
+                length = length(end);
+                %v = v(1:end-1,:);
+%                 T = (v(:,8)./length).^2;
+T = (v(:,8)).^2;
                 tao = v(:,7);
-                %plot(1./T, tao .* sqrt(T));
-                scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
+                if mode == 1
+                    plot(1./T, tao .* sqrt(T));
+                else
+                    scatter(abs(phi(t_index_i)-phi0)^(2/mu)./(T), abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
+                end
                 catch
                     disp('no v0');
                 end
@@ -123,6 +126,47 @@ classdef CLI_DPM < handle
             ax.XScale = "log";
             ax.YScale = "log";
             xlabel('1/T');ylabel('tao * sqrt(T)');
+        end
+        
+        function Angell(obj,mode)
+            figure(3); hold on; box on;
+            set(gcf,'color','w');
+            phi = [];
+            T=[];
+            tao=[];
+            phi_0 = linspace(0.2,0.8337,40);
+            for t_index_i = 0 :39
+                v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
+                phi_file = obj.basefolder + int2str(t_index_i) + "/" + "phi_" + int2str(t_index_i) + "0.txt";
+                length_file = obj.basefolder + int2str(t_index_i) + "/" + "length_jammed_" + int2str(t_index_i) + ".txt";
+                try
+                v = csvread(v0_file);
+                v = sortrows(v, 8);
+                length = csvread(length_file);
+                length = length(end);
+                p_file = csvread(phi_file);
+                phi = [phi, mean(p_file,'all')];
+                %phi = [phi,phi_0(t_index_i+1)];
+                %v = v(1:end-1,:);
+                T = [T, (v(:,8)./length).^2];
+                tao = [tao, v(:,7)];
+                catch
+                    disp('no v0');
+                end
+            end
+            threash=10000;
+            [~,idx]=min(abs(tao-threash));
+            if mode == 0
+                phi = phi(1:idx)./phi(idx);
+                tao = tao(1:idx);
+            end
+            plot(phi,tao);
+            ax = gca;
+            ax.YScale = "log";
+            xlabel('phi');ylabel('tao');
+            figure(4); hold on; box on;
+            set(gcf,'color','w');
+            plot(T);
         end
         
     end

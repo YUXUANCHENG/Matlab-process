@@ -5,15 +5,22 @@ addpath FlowRate
 addpath Trial
 addpath CLI
 
-basefolder = "~/project/cells172/";
+basefolder = "~/project/cells185/";
 %basefolder = "~/project/cells142/";
 % 
 % %folderList = ["~/project/cells102/","~/project/cells101/","~/project/cells100/","~/project/cells94/","~/project/cells98/"];
 % %folderList = ["~/project/cells105/","~/project/cells104/","~/project/cells103/","~/project/cells106/"];
 % % % 
 cli = CLI_DPM(basefolder);
-%cli.readSysProperty(0, 5, 0, 5);
-cli.readTao();
+%cli.readSysProperty(5, 10, 5, 10);
+cli.readTao(1, 0.749, 1.3, 2.9)
+%cli.Angell(1);
+
+% folderList = ["~/project/cells179/","~/project/cells180/","~/project/cells184/","~/project/cells182/","~/project/cells183/"];
+% for basefolder = folderList
+%     cli = CLI_DPM(basefolder);
+%     cli.Angell(1);
+% end
 
 % cli.plotScalling();
 %folderList = ["~/project/cells134/","~/project/cells135/","~/project/cells113/"];
