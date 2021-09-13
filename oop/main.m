@@ -46,6 +46,6 @@ cli = CLI_hopper(basefolder);
 % cli.calHopperProperty(39, 19, 2, 50);
 % cli.plotFlowRate();
 
-cli.HopperProperty(99, 39, 0, 39, 4, 50);
+cli.HopperProperty(99, 39, 0, 0, 3, 50);
 % cli.plotFlowRateWithN()
 % cli.plotFlowRateVSN_W()

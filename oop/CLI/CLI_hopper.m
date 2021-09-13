@@ -25,15 +25,17 @@ classdef CLI_hopper < CLI_DPM
                         fileReader = FileReader();
                         trial = Trial_hopper(t_index_i,t_index_j,obj.basefolder,fileReader);
                         %trial.plotInitial();
-                        %trial.readV0();
+                        trial.readV0();
                         trial.readMDdata();
-                        %trial.plotLastFrame(2);
-                        %trial.showVideo(50);
+                        trial.plotLastFrame(2);
+                        trial.showVideo(50);
                         %trial.saveVideo(50);
                         trial.createCalculator();
                         trial.printCellCount();
                         trial.plotEk();
                         trial.flowRate(mode,varargin);
+                        trial.calDensity(20,3);
+                        trial.plotDensity();
                         obj.hopperProperty = [obj.hopperProperty, trial];
                     catch e
                         fprintf(1,"%s", e.message);

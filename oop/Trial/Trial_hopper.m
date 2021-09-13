@@ -8,6 +8,7 @@ classdef Trial_hopper < Trial_DPM
         g
         width
         result
+        density
     end
     
     methods
@@ -66,6 +67,26 @@ classdef Trial_hopper < Trial_DPM
                 obj.calculator.cell_count();
             end
             obj.flow_rate = obj.calculator.flowRate(mode, varargin{1});
+        end
+        
+        function calDensity(obj, timeWindow, heightWindow)
+            if isempty(obj.calculator.count)
+                obj.calculator.cell_count();
+            end
+            obj.density = obj.calculator.calDensity(timeWindow, heightWindow);
+        end
+        
+        function plotDensity(obj)
+            figure(13), hold on, box on;
+            valueMatrix = obj.density{3};
+            valueMatrix = reshape(valueMatrix, [], obj.density{4});
+%             h = HeatMap(valueMatrix);
+%             %h = heatmap(obj.density{1},obj.density{2},obj.density{3});
+%             h.XLabel = '# particle';
+%             h.YLabel = 'height';
+            colormap('jet')
+            imagesc(valueMatrix)
+            colorbar
         end
         
     end
