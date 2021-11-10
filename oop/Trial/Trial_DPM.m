@@ -30,6 +30,7 @@ classdef Trial_DPM < handle
         phi
         mean_phi
         offset = 1
+        avgR = 1
     end
     
     methods
@@ -48,6 +49,12 @@ classdef Trial_DPM < handle
             obj.N=sum(obj.lengthscale(1:end-2),'all');
             obj.frames= size(obj.fileReader.coordinate,1)/obj.N ;
             obj.Ncell = size(obj.lengthscale,1)-2;
+        end
+        
+        function getAvgR(obj)
+            avgPhi = mean(obj.fileReader.phi,'all');
+            tArea = obj.fileReader.lengthscale(end)^2;
+            obj.avgR = sqrt((avgPhi * tArea / obj.Ncell)/ pi);
         end
         
         function readInitial(obj)
@@ -82,6 +89,7 @@ classdef Trial_DPM < handle
             %obj.coordinate = obj.fileReader.coordinate;
             %obj.vel = obj.fileReader.vel;
             obj.getMDinfo();
+            obj.getAvgR();
         end
         
         function readTao(obj)
@@ -96,7 +104,7 @@ classdef Trial_DPM < handle
         end
         
         function plotVelDistribution(obj)
-            speed = (obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)./(obj.fileReader.lengthscale(end)^2);
+            speed = (obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)./(obj.avgR^2);
             vel_s = sqrt(speed);
             %vel_s = obj.fileReader.vel(:,2)/obj.fileReader.lengthscale(end);
             obj.Temp = mean(speed,'all');
@@ -113,7 +121,7 @@ classdef Trial_DPM < handle
         
         function plotRotationVsTranslaion(obj)
             [tran, rota] = obj.calculator.cal_trans_rotat();
-            figure(6), hold on, box on;
+            figure(3), hold on, box on;
             set(gcf,'color','w');
             scatter(1:obj.frames, tran);
             scatter(1:obj.frames, rota);
@@ -132,12 +140,13 @@ classdef Trial_DPM < handle
         end
         
         function rescaleMSD(obj)
-            obj.MSD = obj.MSD/(obj.fileReader.lengthscale(end)^2);
+            obj.MSD = obj.MSD/(obj.avgR^2);
         end
         
         function rescaleTime(obj)
 %             time_scale = (1/5000) * (100000/0.005);
-            time_scale = (1/2000) * (10000/0.005);
+%             time_scale = (1/2000) * (10000/0.005);
+            time_scale = (1/2000) * (10000/0.002);
             obj.deltaT = obj.deltaT * time_scale;
         end
         
@@ -157,8 +166,8 @@ classdef Trial_DPM < handle
         function cal_ISF(obj)
             [obj.ISF, obj.deltaT] = obj.calculator.cal_ISF();
             obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),100)));
-            %obj.rescaleTime();
-            obj.deltaT = obj.deltaT./(10^3);
+            obj.rescaleTime();
+            %obj.deltaT = obj.deltaT./(10^3);
         end
         
         function plotMSD(obj)
@@ -169,7 +178,8 @@ classdef Trial_DPM < handle
             %plot(deltaT(logindex), MSD(logindex),'color','red','linewidth',3);
             
             plot(obj.deltaT(obj.logindex), obj.MSD(obj.logindex),'linewidth',3);
-            xlabel('time');ylabel('MSD');
+            set(gca,'FontSize',20)
+            xlabel('$t$','fontsize',30, 'interpreter','latex');ylabel('$\Delta^2$','fontsize',30,'interpreter','latex');
             length_t = length(obj.deltaT);
             half_log = round(size(obj.logindex,2)/3);
             if half_log == 0
@@ -258,7 +268,34 @@ classdef Trial_DPM < handle
             close(vobj);
         end
         
-        function plotTrajectory(obj, tFrame)
+%         function plotTrajectory(obj, tFrame)
+%             if isempty(obj.calculator.x_comp)
+%                 obj.calculator.cal_c_pos();
+%             end
+%             
+%             freq = floor(obj.frames/tFrame);
+%             figure(6)
+%             set(gcf,'color','w');
+%             hold on, box on;
+%             axis('equal');
+%             L = [obj.lengthscale(end-1),obj.lengthscale(end)];
+%             axis([0 L(1) 0 L(2)]);
+% %             x_f = mod(obj.calculator.x_comp,L(1));
+% %             y_f = mod(obj.calculator.y_comp,L(2));
+%             x_f = obj.calculator.x_comp;
+%             y_f = obj.calculator.y_comp;
+%             
+%             for ci = 1: obj.Ncell
+%                 %plot(obj.calculator.x_comp(1:freq:end,ci),obj.calculator.y_comp(1:freq:end,ci))
+%                 for i_dir = [-2, -1, 0, 1, 2]
+%                     for j_dir = [-2, -1, 0, 1, 2]
+%                         plot(x_f(1:freq:end,ci) + L(1) * i_dir, y_f(1:freq:end,ci) + L(2) * j_dir)
+%                     end
+%                 end
+%             end
+%             
+%         end
+         function plotTrajectory(obj, tFrame)
             if isempty(obj.calculator.x_comp)
                 obj.calculator.cal_c_pos();
             end
@@ -267,20 +304,32 @@ classdef Trial_DPM < handle
             figure(6)
             set(gcf,'color','w');
             hold on, box on;
-            
+            axis('equal');
             L = [obj.lengthscale(end-1),obj.lengthscale(end)];
             axis([0 L(1) 0 L(2)]);
-%             x_f = mod(obj.calculator.x_comp,L(1));
-%             y_f = mod(obj.calculator.y_comp,L(2));
-            x_f = obj.calculator.x_comp;
-            y_f = obj.calculator.y_comp;
+            x_f = mod(obj.calculator.x_comp,L(1));
+            y_f = mod(obj.calculator.y_comp,L(2));
+%             x_f = obj.calculator.x_comp;
+%             y_f = obj.calculator.y_comp;
             
             for ci = 1: obj.Ncell
-                %plot(obj.calculator.x_comp(1:freq:end,ci),obj.calculator.y_comp(1:freq:end,ci))
-                for i_dir = [-2, -1, 0, 1, 2]
-                    for j_dir = [-2, -1, 0, 1, 2]
-                        plot(x_f(1:freq:end,ci) + L(1) * i_dir, y_f(1:freq:end,ci) + L(2) * j_dir)
+                x_data = x_f(1:freq:end,ci);
+                y_data = y_f(1:freq:end,ci);
+                dif_x = abs(x_data(2:end) - x_data(1:end-1));
+                dif_y = abs(y_data(2:end) - y_data(1:end-1));
+                x_sep_index = find(dif_x > 0.9 * L(1));
+                y_sep_index = find(dif_y > 0.9 * L(2));
+                sep_index = [x_sep_index; y_sep_index];
+                if isempty(sep_index)
+                    plot(x_data, y_data)
+                else
+                    sep_index = [sep_index; [1; size(x_data,1)]];
+                    sep_index = unique(sep_index);
+                    sep_index = sort(sep_index);
+                    for sep_i = 1:size(sep_index)-1
+                        plot(x_data(sep_index(sep_i)+1:sep_index(sep_i+1)), y_data(sep_index(sep_i)+1:sep_index(sep_i+1)))
                     end
+           
                 end
             end
             
@@ -324,9 +373,8 @@ classdef Trial_DPM < handle
                 x_f = mod(x_f,L(1));
                 y_f = mod(y_f,L(2));
             else
-                %axis([0 L(1)*1.1 0 L(2)]);
-                axis([-L(2)*4 L(1)*1.1 0 L(2)]);
-                %axis([0 3 0 2]);
+                axis([0 L(1)*1.1 0 L(2)]);
+                %axis([-L(2)*4 L(1)*1.1 0 L(2)]);
             end
 
             for ci = 1:obj.Ncell

@@ -86,6 +86,32 @@ classdef Calculator < handle
             end
         end
         
+        function areas = cal_area(obj, xpos_at_frame, ypos_at_frame)
+            areas = zeros(1, obj.trial.Ncell);
+            for ci = 1: obj.trial.Ncell
+                index = sum(obj.trial.lengthscale(1:ci),'all');
+                start_point_last = 1 + index - obj.trial.lengthscale(ci);
+                end_point_last = index;
+                x_pos = xpos_at_frame(start_point_last:end_point_last);
+                y_pos = ypos_at_frame(start_point_last:end_point_last);
+                areas(ci) = polyarea(x_pos, y_pos);
+            end
+        end
+        
+        function radii = calSmallestR(obj, xpos_at_frame, ypos_at_frame)
+            [xcomp,ycomp] = obj.help_cal_c_pos(xpos_at_frame, ypos_at_frame);
+            radii = zeros(1, obj.trial.Ncell);
+            for ci = 1: obj.trial.Ncell
+                index = sum(obj.trial.lengthscale(1:ci),'all');
+                start_point_last = 1 + index - obj.trial.lengthscale(ci);
+                end_point_last = index;
+                x_pos = xpos_at_frame(start_point_last:end_point_last);
+                y_pos = ypos_at_frame(start_point_last:end_point_last);
+                dist = sqrt((x_pos - xcomp(ci)).^2 + (y_pos - ycomp(ci)).^2) ;
+                radii(ci) = min(dist);
+            end
+        end
+        
         function cal_c_pos(obj)
             obj.x_comp=zeros(obj.trial.frames,obj.trial.Ncell);
             obj.y_comp=zeros(obj.trial.frames,obj.trial.Ncell);
