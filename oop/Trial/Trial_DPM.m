@@ -30,6 +30,7 @@ classdef Trial_DPM < handle
         phi
         mean_phi
         offset = 1
+        avgR = 1
     end
     
     methods
@@ -48,6 +49,12 @@ classdef Trial_DPM < handle
             obj.N=sum(obj.lengthscale(1:end-2),'all');
             obj.frames= size(obj.fileReader.coordinate,1)/obj.N ;
             obj.Ncell = size(obj.lengthscale,1)-2;
+        end
+        
+        function getAvgR(obj)
+            avgPhi = mean(obj.fileReader.phi,'all');
+            tArea = obj.fileReader.lengthscale(end)^2;
+            obj.avgR = sqrt((avgPhi * tArea / obj.Ncell)/ pi);
         end
         
         function readInitial(obj)
@@ -82,6 +89,7 @@ classdef Trial_DPM < handle
             %obj.coordinate = obj.fileReader.coordinate;
             %obj.vel = obj.fileReader.vel;
             obj.getMDinfo();
+            obj.getAvgR();
         end
         
         function readTao(obj)
@@ -96,7 +104,7 @@ classdef Trial_DPM < handle
         end
         
         function plotVelDistribution(obj)
-            speed = (obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)./(obj.fileReader.lengthscale(end)^2);
+            speed = (obj.fileReader.vel(:,1).^2 + obj.fileReader.vel(:,2).^2)./(obj.avgR^2);
             vel_s = sqrt(speed);
             %vel_s = obj.fileReader.vel(:,2)/obj.fileReader.lengthscale(end);
             obj.Temp = mean(speed,'all');
@@ -132,12 +140,13 @@ classdef Trial_DPM < handle
         end
         
         function rescaleMSD(obj)
-            obj.MSD = obj.MSD/(obj.fileReader.lengthscale(end)^2);
+            obj.MSD = obj.MSD/(obj.avgR^2);
         end
         
         function rescaleTime(obj)
 %             time_scale = (1/5000) * (100000/0.005);
-            time_scale = (1/2000) * (10000/0.005);
+%             time_scale = (1/2000) * (10000/0.005);
+            time_scale = (1/2000) * (10000/0.002);
             obj.deltaT = obj.deltaT * time_scale;
         end
         
@@ -157,8 +166,8 @@ classdef Trial_DPM < handle
         function cal_ISF(obj)
             [obj.ISF, obj.deltaT] = obj.calculator.cal_ISF();
             obj.logindex = unique(round(logspace(0, log10(obj.deltaT(end)),100)));
-            %obj.rescaleTime();
-            obj.deltaT = obj.deltaT./(10^3);
+            obj.rescaleTime();
+            %obj.deltaT = obj.deltaT./(10^3);
         end
         
         function plotMSD(obj)
@@ -364,9 +373,8 @@ classdef Trial_DPM < handle
                 x_f = mod(x_f,L(1));
                 y_f = mod(y_f,L(2));
             else
-                %axis([0 L(1)*1.1 0 L(2)]);
-                axis([-L(2)*4 L(1)*1.1 0 L(2)]);
-                %axis([0 3 0 2]);
+                axis([0 L(1)*1.1 0 L(2)]);
+                %axis([-L(2)*4 L(1)*1.1 0 L(2)]);
             end
 
             for ci = 1:obj.Ncell

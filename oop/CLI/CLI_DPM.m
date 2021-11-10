@@ -35,7 +35,7 @@ classdef CLI_DPM < handle
         function pipline(obj, trial)
                 trial.plotInitial();
                  trial.readMDdata();
-                 trial.setMaxFrames(10000);
+                 %trial.setMaxFrames(10000);
                  trial.plotLastFrame(2);
                 %trial.showVideo(20);
                 %trial.saveVideo(50);    
@@ -44,11 +44,11 @@ classdef CLI_DPM < handle
                 trial.plotVelDistribution();
                 trial.readPhi();
                 trial.plotRotationVsTranslaion();
-%                 %trial.plotCalADistribution();
+                trial.plotCalADistribution();
                 trial.cal_msd();
                 trial.plotMSD();
-%                 %trial.cal_ISF();
-%                 %trial.plotISF();
+                trial.cal_ISF();
+                trial.plotISF();
 %                 trial.calculator.cal_c_pos();
 %                 trial.verifyISF(3);
 %                 trial.cleanUp();
@@ -97,29 +97,42 @@ classdef CLI_DPM < handle
             end
         end
         
-        function readTao(obj,mode, phi0, mu, del)
+        function readTao(obj,mode, phi0, mu, del, eScale)
+            energyScale = eScale;
             figure(3); hold on; box on;
             set(gcf,'color','w');
             phi = 0.7:0.015:0.7+9*0.015;
-            for t_index_i = 0 :9
+            for t_index_i = 1 :9
                 v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
                 length_file = obj.basefolder + int2str(t_index_i) + "/" + "length_jammed_" + int2str(t_index_i) + ".txt";
+                phi_file = obj.basefolder + int2str(t_index_i) + "/" + "phi_" + int2str(t_index_i) + "0.txt";
                 try
                 v = csvread(v0_file);
                 v = sortrows(v, 8);
-                length = csvread(length_file);
-                length = length(end);
-                %v = v(1:end-1,:);
-%                 T = (v(:,8)./length).^2;
-T = (v(:,8)).^2;
+                lengthS = csvread(length_file);
+                NC = length(lengthS) - 2;
+                lengthS = lengthS(end);
+                current_phi = phi(t_index_i+1);
+                try       
+                    p_file = csvread(phi_file);
+                    current_phi = mean(p_file,'all');
+                end
+                area = current_phi* lengthS * lengthS / NC;
+                scale = sqrt(area/pi);
+                %scale = 1;
+                T = (v(:,8)./scale).^2;
+                T = T./energyScale;
                 tao = v(:,7);
+                tao = tao * sqrt(energyScale);
                 if mode == 1
                     plot(1./T, tao .* sqrt(T));
-                else
-                    scatter(abs(phi(t_index_i)-phi0)^(2/mu)./(T), abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
+                elseif mode == 0
+                    scatter(abs(current_phi-phi0)^(2/mu)./(T), abs(current_phi-phi0)^(del)*log10(tao .* sqrt(T)));
+                elseif mode == 2
+                    plot(1./T, tao);
                 end
-                catch
-                    disp('no v0');
+                catch e
+                    disp(e);
                 end
             end
             ax = gca;
@@ -167,6 +180,52 @@ T = (v(:,8)).^2;
             figure(4); hold on; box on;
             set(gcf,'color','w');
             plot(T);
+        end
+    
+        function Arrhenius(obj,mode)
+            threash=10000;
+            energyScale = 1;
+            figure(3); hold on; box on;
+            set(gcf,'color','w');
+            phi = 0.7:0.015:0.7+9*0.015;
+            for t_index_i = 8:9
+                v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
+                length_file = obj.basefolder + int2str(t_index_i) + "/" + "length_jammed_" + int2str(t_index_i) + ".txt";
+                phi_file = obj.basefolder + int2str(t_index_i) + "/" + "phi_" + int2str(t_index_i) + "0.txt";
+                try
+                v = csvread(v0_file);
+                v = sortrows(v, 8, 'descend');
+                lengthS = csvread(length_file);
+                NC = length(lengthS) - 2;
+                lengthS = lengthS(end);
+                current_phi = phi(t_index_i+1);
+                try       
+                    p_file = csvread(phi_file);
+                    %current_phi = mean(p_file,'all');
+                end
+                area = current_phi* lengthS * lengthS / NC;
+                scale = sqrt(area/pi);
+                %scale = 1;
+                T = (v(:,8)./scale).^2;
+                T = T./energyScale;
+                tao = v(:,7);
+                tao = tao * sqrt(energyScale);
+                
+                [~,idx]=min(abs(tao-threash));
+                if mode == 0
+                    T = T(1:idx)./T(idx);
+                    tao = tao(1:idx);
+                end
+                plot(1./T,tao);
+                ax = gca;
+                ax.YScale = "log";
+                xlabel('Tg/T');ylabel('tao');
+                
+                catch e
+                    disp(e);
+                end
+            end
+         
         end
         
     end

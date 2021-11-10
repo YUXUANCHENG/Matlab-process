@@ -26,16 +26,17 @@ classdef CLI_hopper < CLI_DPM
                         trial = Trial_hopper(t_index_i,t_index_j,obj.basefolder,fileReader);
                         %trial.plotInitial();
                         trial.readV0();
-                        trial.readMDdata();
-                        trial.plotLastFrame(2);
-                        trial.showVideo(50);
-                        %trial.saveVideo(50);
-                        trial.createCalculator();
-                        trial.printCellCount();
-                        trial.plotEk();
-                        trial.flowRate(mode,varargin);
-                        trial.calDensity(20,3);
-                        trial.plotDensity();
+                        trial.cal_eff_width_scale();
+%                          trial.readMDdata();
+%                          trial.plotLastFrame(2);
+%                         trial.showVideo(50);
+%                         %trial.saveVideo(50);
+%                          trial.createCalculator();
+%                         trial.printCellCount();
+%                         trial.plotEk();
+%                         trial.flowRate(mode,varargin);
+%                         trial.calDensity(20,3);
+%                         trial.plotDensity();
                         obj.hopperProperty = [obj.hopperProperty, trial];
                     catch e
                         fprintf(1,"%s", e.message);
@@ -171,20 +172,27 @@ classdef CLI_hopper < CLI_DPM
             clog_p = [];
             error = [];
             width = [];
+            eff_width = [];
             for i = 1: length(obj.hopperProperty)
                 width = [width, obj.hopperProperty(i).width];
             end
             width = unique(width);
             for w = width
                 results = [];
+                width_scale = [];
                 for i = 1: length(obj.hopperProperty)
                     if obj.hopperProperty(i).width == w
                         results = [results, obj.hopperProperty(i).result];
+                        width_scale = [width_scale, obj.hopperProperty(i).eff_width_scale];
                     end
                 end
                 clog_p = [clog_p, mean(results)];
+                eff_width = [eff_width, w * mean(width_scale)];
                 error = [error, std(results)/sqrt(size(results, 2))];
             end
+            
+            %width = eff_width;
+            
             fitfun = fittype( @(a, b, x) 1 ./ (1 + exp( (x - a) ./ b)));
             %fitted = fit( (obj.logindex(half:end))', abs(obj.ISF(obj.logindex(half:end))), fitfun, 'StartPoint', [10 * (10 - obj.t_index_j),1]);
             fitted = fit(width', clog_p', fitfun, 'StartPoint', [1,0.1]);

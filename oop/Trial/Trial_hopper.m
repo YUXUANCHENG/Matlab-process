@@ -7,6 +7,7 @@ classdef Trial_hopper < Trial_DPM
         gam
         g
         width
+        eff_width_scale = 1
         result
         density
     end
@@ -39,6 +40,42 @@ classdef Trial_hopper < Trial_DPM
         function readMDdata(obj)
             readMDdata@Trial_DPM(obj);
             %obj.hopperDataProcess();
+        end
+        
+        function effR = calEffR(obj)
+            if (isempty(obj.fileReader.coordinate))
+                obj.readMDdata();
+            end
+            obj.createCalculator();
+            if obj.result
+                i = floor(obj.frames);
+            else
+                obj.calculator.cell_count();
+                [v, i] = min(abs(obj.calculator.count - obj.Ncell* 2/3));
+            end
+            start_point = 1 + obj.N * ( i - 1 );
+            end_point = obj.N * i;
+            x_pos = obj.fileReader.coordinate(start_point:end_point,1);
+            y_pos = obj.fileReader.coordinate(start_point:end_point,2);
+            [xcomp,ycomp] = obj.calculator.help_cal_c_pos(x_pos, y_pos);
+            %areas = obj.calculator.cal_area(x_pos, y_pos);
+            smallestR = obj.calculator.calSmallestR(x_pos, y_pos);
+            
+%             index = obj.lengthscale(end-1)/2 < xcomp & xcomp < obj.lengthscale(end-1);
+            index = obj.lengthscale(end-1)/4  < xcomp & xcomp < obj.lengthscale(end-1);
+            %area_filter = areas > 0;
+            %avg_area = mean(areas(index & area_filter),'all');
+            %effR = sqrt(avg_area/pi);
+            %areas = areas(index & area_filter);
+            Rfilter = smallestR(index);
+            %effR = mean(sqrt(areas./pi),'all');
+            effR = mean(Rfilter,'all');
+            
+        end
+        
+        function cal_eff_width_scale(obj)
+            effR = obj.calEffR();
+            obj.eff_width_scale = ((1 + 1.4)/(2 * 2))/effR;
         end
         
         function createCalculator(obj)
