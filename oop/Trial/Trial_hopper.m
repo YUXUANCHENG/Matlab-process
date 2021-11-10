@@ -9,6 +9,7 @@ classdef Trial_hopper < Trial_DPM
         width
         result
         density
+        vDistribution
     end
     
     methods
@@ -23,7 +24,7 @@ classdef Trial_hopper < Trial_DPM
         end
         
         function readInitial(obj)
-            readInitial@Trial(obj);
+            readInitial@Trial_DPM(obj);
             %obj.hopperDataProcess();
         end
         
@@ -76,10 +77,30 @@ classdef Trial_hopper < Trial_DPM
             obj.density = obj.calculator.calDensity(timeWindow, heightWindow);
         end
         
+        function calVdistribution(obj,timeWindow, heightWindow)
+            if isempty(obj.calculator.count)
+                obj.calculator.cell_count();
+            end
+            obj.vDistribution = obj.calculator.calVdistribution(timeWindow, heightWindow);
+        end
+        
         function plotDensity(obj)
             figure(13), hold on, box on;
             valueMatrix = obj.density{3};
             valueMatrix = reshape(valueMatrix, [], obj.density{4});
+%             h = HeatMap(valueMatrix);
+%             %h = heatmap(obj.density{1},obj.density{2},obj.density{3});
+%             h.XLabel = '# particle';
+%             h.YLabel = 'height';
+            colormap('jet')
+            imagesc(valueMatrix)
+            colorbar
+        end
+        
+        function plotVdistribution(obj)
+            figure(7), hold on, box on;
+            valueMatrix = obj.vDistribution{3};
+            valueMatrix = reshape(valueMatrix, [], obj.vDistribution{4});
 %             h = HeatMap(valueMatrix);
 %             %h = heatmap(obj.density{1},obj.density{2},obj.density{3});
 %             h.XLabel = '# particle';

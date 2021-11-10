@@ -6,6 +6,7 @@ classdef Calculator < handle
         trial
         x_comp
         y_comp
+        x_v
     end
     
     methods
@@ -94,6 +95,15 @@ classdef Calculator < handle
                 [xcomp_t,ycomp_t] = obj.help_cal_c_pos(obj.trial.fileReader.coordinate(start_point:end_point,1),obj.trial.fileReader.coordinate(start_point:end_point,2));
                 obj.x_comp(i,:)= xcomp_t;
                 obj.y_comp(i,:)= ycomp_t;
+            end
+        end
+        
+        function cal_c_x_v(obj)
+            obj.x_v = zeros(obj.trial.frames,obj.trial.Ncell);
+            for i = 1 : obj.trial.frames
+                start_point = 1 + obj.trial.Ncell * ( i - 1 );
+                end_point = obj.trial.Ncell * i;
+                obj.x_v(i,:)= obj.trial.fileReader.vel(start_point:end_point,1);
             end
         end
         

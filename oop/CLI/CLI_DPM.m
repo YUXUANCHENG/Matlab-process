@@ -33,9 +33,9 @@ classdef CLI_DPM < handle
         end
 
         function pipline(obj, trial)
-%                 trial.plotInitial();
+                trial.plotInitial();
                  trial.readMDdata();
-                 trial.setMaxFrames(10000);
+                 %trial.setMaxFrames(10000);
                  trial.plotLastFrame(2);
 %                 trial.showVideo(20);
 %                 %trial.saveVideo(50);    
@@ -52,8 +52,8 @@ classdef CLI_DPM < handle
 %                 trial.calculator.cal_c_pos();
 %                 trial.verifyISF(3);
 %                 trial.cleanUp();
-                 trial.readTao();
-                 trial.plotTaoData();
+%                  trial.readTao();
+%                  trial.plotTaoData();
         end       
         
         function compare(obj, folderList)
@@ -105,16 +105,17 @@ classdef CLI_DPM < handle
             mu = 1.25;
             %del = 1.95;
             del = 2.2;
-            for t_index_i = 0 :9
+            for t_index_i = [0,1,3,4,5,6,7,8,9]
                 v0_file = obj.basefolder + int2str(t_index_i) + "/" + "v0.txt";
                 try
                 v = csvread(v0_file);
                 v = sortrows(v, 8);
-                v = v(1:end-1,:);
+                %v = v(1:end-1,:);
                 T = v(:,8).^2;
                 tao = v(:,7);
                 %plot(1./T, tao .* sqrt(T));
-                scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
+                plot(1./T, tao);
+                %scatter(abs(phi(t_index_i)-phi0)^(2/mu)./T, abs(phi(t_index_i)-phi0)^(del)*log(tao .* sqrt(T)));
                 catch
                     disp('no v0');
                 end
@@ -122,7 +123,9 @@ classdef CLI_DPM < handle
             ax = gca;
             ax.XScale = "log";
             ax.YScale = "log";
-            xlabel('1/T');ylabel('tao * sqrt(T)');
+            xlabel('1/T');
+%             ylabel('tao * sqrt(T)');
+            ylabel('tao');
         end
         
     end

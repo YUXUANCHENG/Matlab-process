@@ -92,6 +92,36 @@ classdef Calculator_hopper < Calculator
             density{4} = count1;
         end
         
+        function vDistribution = calVdistribution(obj, timeWindow, heightWindow)
+            if isempty(obj.x_v)
+                obj.cal_c_x_v();
+            end
+            vDistribution = {};
+            numberInHopper = [];
+            height = [];
+            vAtHeight = [];
+            count1 = 0;
+            for ii = 1: timeWindow: length(obj.count)
+                %if (size(numberInHopper,2) > 0) && (obj.count(ii) == numberInHopper(end))
+                if ismember(obj.count(ii), numberInHopper) || obj.count(ii) == obj.count(1)
+                    continue
+                end
+                
+                for xx = 0 : -heightWindow : -obj.trial.lengthscale(end) * 3
+                    % x axis, # particles in hopper
+                    numberInHopper= [numberInHopper, obj.count(ii)];
+                    height = [height, xx];
+                    marked = find(obj.x_comp(ii,:) < xx & obj.x_comp(ii,:) > xx - heightWindow);
+                    vAtHeight= [vAtHeight, mean(obj.x_v(ii, marked),'all')];
+                end
+                count1 = count1 + 1;
+            end
+            vDistribution{1} = numberInHopper;
+            vDistribution{2} = height;
+            vDistribution{3} = vAtHeight;  
+            vDistribution{4} = count1;
+        end
+        
         function Ek = cal_Ek(obj)
             Ek = zeros(obj.trial.frames,1);
             for i = 1 : obj.trial.frames

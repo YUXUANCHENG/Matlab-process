@@ -5,14 +5,15 @@ addpath FlowRate
 addpath Trial
 addpath CLI
 
-basefolder = "~/project/cells172/";
-%basefolder = "~/project/cells142/";
+%basefolder = "~/project/cells171/";
+basefolder = "~/scratch60/cells198/";
+%basefolder = "~/project/cells154/";
 % 
 % %folderList = ["~/project/cells102/","~/project/cells101/","~/project/cells100/","~/project/cells94/","~/project/cells98/"];
 % %folderList = ["~/project/cells105/","~/project/cells104/","~/project/cells103/","~/project/cells106/"];
 % % % 
 cli = CLI_DPM(basefolder);
-%cli.readSysProperty(0, 5, 0, 5);
+cli.readSysProperty(8, 0, 0, 0);
 cli.readTao();
 
 % cli.plotScalling();
@@ -39,6 +40,6 @@ cli = CLI_hopper(basefolder);
 % cli.calHopperProperty(39, 19, 2, 50);
 % cli.plotFlowRate();
 
-cli.HopperProperty(99, 39, 0, 0, 3, 50);
+cli.HopperProperty(99, 39, 0, 10, 3, 100);
 % cli.plotFlowRateWithN()
 % cli.plotFlowRateVSN_W()
