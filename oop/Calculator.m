@@ -111,6 +111,18 @@ classdef Calculator < handle
             end
         end
         
+        function radii = calLongAxis(obj, xpos_at_frame, ypos_at_frame)
+            radii = zeros(1, obj.trial.Ncell);
+            for ci = 1: obj.trial.Ncell
+                index = sum(obj.trial.lengthscale(1:ci),'all');
+                start_point_last = 1 + index - obj.trial.lengthscale(ci);
+                end_point_last = index;
+                x_pos = xpos_at_frame(start_point_last:end_point_last);
+%                 y_pos = ypos_at_frame(start_point_last:end_point_last);
+                radii(ci) = max(x_pos) - min(x_pos);
+            end
+        end
+        
         function cal_c_pos(obj)
             obj.x_comp=zeros(obj.trial.frames,obj.trial.Ncell);
             obj.y_comp=zeros(obj.trial.frames,obj.trial.Ncell);
@@ -123,15 +135,18 @@ classdef Calculator < handle
             end
         end
         
-        function [tran, rota] = cal_trans_rotat(obj)
+        function [tran, rota, U] = cal_trans_rotat(obj)
             tran = zeros(obj.trial.frames,1);
             rota = zeros(obj.trial.frames,1);
+            U = zeros(obj.trial.frames,1);
             for i = 1 : obj.trial.frames
                 start_point = 1 + obj.trial.Ncell * ( i - 1 );
                 end_point = obj.trial.Ncell * i;
+                total_U = obj.trial.fileReader.vel(start_point:end_point,5);
                 total_K = obj.trial.fileReader.vel(start_point:end_point,4);
                 tran_K_fraction = obj.trial.fileReader.vel(start_point:end_point,3);
                 tran_K = tran_K_fraction .* total_K;
+                U(i) = mean(total_U, 'all');
                 tran(i) = mean(tran_K, 'all');
                 rota(i) = mean(total_K - tran_K, 'all');
             end

@@ -97,7 +97,7 @@ classdef Trial_DPM < handle
         end
         
         function plotLastFrame(obj, num)
-            i = floor(obj.frames);
+            i = floor(obj.frames)-0;
             start_point = 1 + obj.N * ( i - 1 );
             end_point = obj.N * i;
             obj.plotConfig(num, start_point, end_point);
@@ -116,23 +116,28 @@ classdef Trial_DPM < handle
         function plotCalADistribution(obj)
             figure(9), hold on, box on;
             set(gcf,'color','w');
+            disp(mean(obj.fileReader.cal_A,'all'));
             h = histogram(obj.fileReader.cal_A,'BinWidth',0.01, 'Normalization', 'probability');
         end
         
         function plotRotationVsTranslaion(obj)
-            [tran, rota] = obj.calculator.cal_trans_rotat();
+            [tran, rota, U] = obj.calculator.cal_trans_rotat();
             figure(3), hold on, box on;
             set(gcf,'color','w');
             scatter(1:obj.frames, tran);
             scatter(1:obj.frames, rota);
+            scatter(1:obj.frames, U);
             yline(mean(tran,'all'));
             yline(mean(rota,'all'));
             hold off;
         end
         
         function plotConfig(obj, num, start_point, end_point)
+            currentT = end_point/obj.N;
+            
             obj.plot_particles_2d_c(num,[obj.lengthscale(end-1),obj.lengthscale(end)],...
-                obj.fileReader.coordinate(start_point:end_point,3)/2,obj.fileReader.coordinate(start_point:end_point,1),obj.fileReader.coordinate(start_point:end_point,2))
+                obj.fileReader.coordinate(start_point:end_point,3)/2,obj.fileReader.coordinate(start_point:end_point,1),obj.fileReader.coordinate(start_point:end_point,2),...
+                currentT)
         end
         
         function createCalculator(obj)
@@ -146,7 +151,7 @@ classdef Trial_DPM < handle
         function rescaleTime(obj)
 %             time_scale = (1/5000) * (100000/0.005);
 %             time_scale = (1/2000) * (10000/0.005);
-            time_scale = (1/2000) * (10000/0.002);
+            time_scale = (1/2000) * (250000/0.005);
             obj.deltaT = obj.deltaT * time_scale;
         end
         
@@ -177,7 +182,11 @@ classdef Trial_DPM < handle
             % plot curve, add units to axes, etc
             %plot(deltaT(logindex), MSD(logindex),'color','red','linewidth',3);
             
-            plot(obj.deltaT(obj.logindex), obj.MSD(obj.logindex),'linewidth',3);
+            onX = obj.deltaT(obj.logindex);
+            onY = obj.MSD(obj.logindex);
+            fillter = onX < 1E10;
+            plot(onX(fillter), onY(fillter),'linewidth',3);
+            
             set(gca,'FontSize',20)
             xlabel('$t$','fontsize',30, 'interpreter','latex');ylabel('$\Delta^2$','fontsize',30,'interpreter','latex');
             length_t = length(obj.deltaT);
@@ -215,11 +224,15 @@ classdef Trial_DPM < handle
             obj.tao = obj.deltaT(obj.logindex(tao_index));
             
             figure((obj.t_index_j+1)*10+3)
+            set(gca,'FontSize',20)
             set(gcf,'color','w');
             hold on, box on;
-            scatter(obj.deltaT(obj.logindex), obj.ISF(obj.logindex),25,'filled');
+            onX = obj.deltaT(obj.logindex);
+            onY = obj.ISF(obj.logindex);
+            fillter = onX < 1E7;
+            scatter(onX(fillter), onY(fillter),25,'filled');
             %plot(fitted,(obj.deltaT(obj.logindex(half:end))), obj.ISF(obj.logindex(half:end)));
-            xlabel('time');ylabel('ISF');
+            xlabel('$t$','fontsize',30, 'interpreter','latex');ylabel('$ISF$','fontsize',30,'interpreter','latex');
             ax = gca;
             ax.XScale = "log";
             ax.YScale = "Linear";
@@ -242,6 +255,7 @@ classdef Trial_DPM < handle
         
         function showVideo(obj, tFrame)
             for i = 1 : ceil(obj.frames/tFrame) : obj.frames
+%             for i = obj.frames : - ceil(obj.frames/tFrame) : 1
                 start_point = 1 + obj.N * ( i - 1 );
                 end_point = obj.N * i;
                 obj.plotConfig(2, start_point, end_point);
@@ -257,7 +271,7 @@ classdef Trial_DPM < handle
 %             vobj = VideoWriter("video/" + name + obj.t_index_i + obj.t_index_j + ".mp4", 'MPEG-4');
             vobj.FrameRate = 5;
             open(vobj);
-            for i = 1 : ceil(obj.frames/tFrame) : obj.frames
+            for i = 1 : max(ceil(obj.frames/tFrame), 1) : obj.frames
                 start_point = 1 + obj.N * ( i - 1 );
                 end_point = obj.N * i;
                 obj.plotConfig(2, start_point, end_point);
@@ -351,12 +365,31 @@ classdef Trial_DPM < handle
             delete(obj.fileReader);
         end
         
-        function plot_particles_2d_c(obj, fig, L, r_f, x_f, y_f)
+        function plot_particles_2d_c(obj, fig, L, r_f, x_f, y_f, currentT)
+            cEnd = currentT * obj.Ncell;
+            cStart = cEnd - obj.Ncell + 1;
+            calA = obj.fileReader.cal_A(cStart:cEnd);
+            velU = obj.fileReader.vel(cStart:cEnd, 1);
+            velV = obj.fileReader.vel(cStart:cEnd, 2);
+            vel = sqrt(velU.^2 + velV.^2);
+            color = calA;
+%             color = vel;
+            sp = 0;
+            if (sp)
+            [xcomp,ycomp] = obj.calculator.help_cal_c_pos(x_f, y_f);
+            end
+%             filter = xcomp > L(1)*0.5;
+%             color(filter) = 0;
+%             color = color./max(color,'all');
+%             color = jet(obj.Ncell);
+%             color(1,:) = [0,0,0];
+%             color = color./min(color,'all');
             % determine colors
             c       = zeros(obj.Ncell,3);
             c0      = [0 0.2 0.95];
             rmin    = min(obj.lengthscale(1:end-2));
-            rs      = obj.lengthscale(1:end-2)./rmin;        
+            rs      = obj.lengthscale(1:end-2)./rmin;  
+%             rs = color;
             for n = 1:obj.Ncell
                 c(n,:) = rs(n).*c0;
             end
@@ -373,10 +406,17 @@ classdef Trial_DPM < handle
                 x_f = mod(x_f,L(1));
                 y_f = mod(y_f,L(2));
             else
-                axis([0 L(1)*1.1 0 L(2)]);
-                %axis([-L(2)*4 L(1)*1.1 0 L(2)]);
+%                 axis([-L(2)*0.6 L(1)*1.1 0 L(2)]);
+%                 axis([-L(2)*1.4 max(L(1)*1.1, 3) 0 L(2)]);
+                axis([-35 max(L(1)*1.1, 3) 0 L(2)]);
+%                 axis([-42.5 -40.5 0 1]);
+                set(gca,'YTickLabel',[]);
+                set(gca,'XTickLabel',[]);
+                
             end
-
+%             color = color./max(color,'all');
+%                 [xcomp,ycomp] = obj.calculator.help_cal_c_pos(x_f,y_f);
+%                 quiver(xcomp',ycomp',velU,velV)
             for ci = 1:obj.Ncell
                 index = sum(obj.lengthscale(1:ci),'all');
                 start_point_last = 1 + index - obj.lengthscale(ci);
@@ -384,6 +424,28 @@ classdef Trial_DPM < handle
                 x = x_f(start_point_last:end_point_last);
                 y = y_f(start_point_last:end_point_last);
                 r = r_f(start_point_last:end_point_last);
+                frictionless = 1;
+                if (sp)
+                    if (mod(ci,2))
+                        rr = 0.5;
+                    else
+                        rr = 0.7;
+                    end
+                    circle(xcomp(ci),ycomp(ci),rr);
+%                     rectangle('Position',[xcomp(ci)-rr, ycomp(ci)-rr, 2*rr, 2*rr],'Curvature',[1 1],'edgecolor',c(ci,:));
+                else
+                if (frictionless)
+                    x = [x; x(1)];
+                    y = [y; y(1)];
+                    plot(x,y)
+                     fill(x,y,color(ci))
+                      
+%                     if ci == 111 || ci == 1136 || ci == 221 || ci == 293
+%                     if ci == 1276
+%                       text(x(1),y(1),[num2str(color(ci))])
+%                       text(x(end-1),y(end-1),['end'])
+%                     end
+                else
                 for n = 1:obj.lengthscale(ci)
 
                     rectangle('Position',[x(n)-r(n), y(n)-r(n), 2*r(n), 2*r(n)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
@@ -412,10 +474,33 @@ classdef Trial_DPM < handle
                     end
 
                 end
+                end
+                end
+            end
+            if (obj.periodic ~= 1)
+                th = deg2rad(45);
+%                 th = deg2rad(0.1);
+                L1 = L(1) - 0.5*0.2*((1.0/cos(th)) + 1.0 - tan(th));
+                plot([0 L1], [0 L1/tan(th)],'k','LineWidth',3)
+                plot([0 L1], [L(2) L(2)-L1/tan(th)],'k','LineWidth',3)
+                
+%                 for n = 1 : floor(5* L(2)/(2*r(1)))
+%                     pos = -5*L(2)+(n-1)*2*r(1)-r(1);
+%                  rectangle('Position',[pos, 0-r(1), 2*r(1), 2*r(1)],'Curvature',[1 1],'edgecolor',c(ci,:),'facecolor',c(ci,:));
+%                 end
             end
             drawnow;
             %hold off;
         end
+        
+        
     end
+end
+
+function h = circle(x,y,r)
+        th = 0:pi/50:2*pi;
+        xunit = r * cos(th) + x;
+        yunit = r * sin(th) + y;
+        h = plot(xunit, yunit);
 end
 

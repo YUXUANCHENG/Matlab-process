@@ -35,12 +35,13 @@ classdef CLI_DPM < handle
         function pipline(obj, trial)
                 trial.plotInitial();
                  trial.readMDdata();
+                 trial.readV0();
                  %trial.setMaxFrames(10000);
                  trial.plotLastFrame(2);
-                %trial.showVideo(20);
+%                 trial.showVideo(20);
                 %trial.saveVideo(50);    
                 trial.createCalculator();
-                trial.plotTrajectory(50);
+%                 trial.plotTrajectory(50);
                 trial.plotVelDistribution();
                 trial.readPhi();
                 trial.plotRotationVsTranslaion();
@@ -51,7 +52,7 @@ classdef CLI_DPM < handle
                 trial.plotISF();
 %                 trial.calculator.cal_c_pos();
 %                 trial.verifyISF(3);
-%                 trial.cleanUp();
+                trial.cleanUp();
 %                  trial.readTao();
 %                  trial.plotTaoData();
         end       
@@ -84,6 +85,9 @@ classdef CLI_DPM < handle
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             for t_index_i = index_i_s: index_i
+%                 if t_index_i == 2 || t_index_i == 8
+%                     continue
+%                 end
                 for t_index_j = index_j_s: index_j
                     try
                         trial = obj.createTrial(obj.basefolder, t_index_i,t_index_j);
@@ -95,6 +99,32 @@ classdef CLI_DPM < handle
                     end
                 end
             end
+        end
+        
+        function plotPhaseDiagram(obj)
+            obj.ifjammed = [];
+            driving = [];
+            for i = [1,2,3,4,5,7,8,10]
+                if i ==3
+                    driving = sort(obj.sysProperty{i,1}.fileReader.v0(:,1));
+                end
+                for j = 1:10
+                    obj.ifjammed = [obj.ifjammed, max(obj.sysProperty{i,j}.MSD)];
+                end
+            end
+            obj.ifjammed = reshape(obj.ifjammed, 10, []);
+            figure(6);
+            %heatmap(flip(ifjammed,1),'CellLabelColor','none')
+            heatmap(flip(obj.ifjammed,1),'Colormap',jet)
+            %heatmap(flip(obj.ifjammed,1))
+            %heatmap(obj.ifjammed)
+            ax = gca;
+            ax.XData = linspace(1,1.25,8);
+            %ax.YData = flip(linspace(0.0002,0.002,10));
+            ax.YData = flip(driving);
+            xlabel("calA");
+            ylabel("v0");
+            title("Phase Diagram");
         end
         
         function readTao(obj,mode, phi0, mu, del, eScale)

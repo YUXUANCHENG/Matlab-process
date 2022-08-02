@@ -7,6 +7,8 @@ classdef FlowRate1 < handle
         count
         starttime
         endtime
+        cutoff = 0.9
+%         cutoff = 1
     end
     
     methods
@@ -25,8 +27,13 @@ classdef FlowRate1 < handle
             obj.starttime = find(obj.count > 0);
             if size(obj.starttime,1) > 0
                 obj.starttime = obj.starttime(1);
-                obj.endtime = find(obj.count == obj.count(end));
-                obj.endtime = obj.endtime(1);
+                obj.endtime = find(obj.count == floor(obj.count(end)*obj.cutoff));
+                try
+                    obj.endtime = obj.endtime(1);
+                    %obj.endtime = obj.endtime(end);
+                catch e
+                    obj.endtime = 0;
+                end
                 if obj.endtime > obj.starttime
                     % call the help function, this will be overide in
                     % different implementations
@@ -41,7 +48,7 @@ classdef FlowRate1 < handle
         
         function rate = help_cal_rate(obj)
             % specific version of cal_rate
-            rate = (obj.count(end)-obj.count(obj.starttime))/(obj.endtime - obj.starttime);
+            rate = (floor(obj.count(end)*obj.cutoff)-obj.count(obj.starttime))/(obj.endtime - obj.starttime);
         end
     end
 end

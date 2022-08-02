@@ -10,6 +10,8 @@ classdef Trial_hopper < Trial_DPM
         eff_width_scale = 1
         result
         density
+        flow
+        flowStd
     end
     
     methods
@@ -24,7 +26,7 @@ classdef Trial_hopper < Trial_DPM
         end
         
         function readInitial(obj)
-            readInitial@Trial(obj);
+            readInitial@Trial_DPM(obj);
             %obj.hopperDataProcess();
         end
         
@@ -33,8 +35,37 @@ classdef Trial_hopper < Trial_DPM
             obj.kl = obj.fileReader.v0(1);
             obj.gam = obj.fileReader.v0(2);
             obj.g = obj.fileReader.v0(3);
-            obj.width = obj.fileReader.v0(4);
+            obj.width = roundn(obj.fileReader.v0(4),-4);
             obj.result = obj.fileReader.v0(5);
+        end
+        
+        function readAndPlotFriction(obj)
+            friction = obj.fileReader.readFriction();
+            figure(5);hold on;box on;
+            set(gcf,'color','w');
+            plot(friction(:,1),friction(:,2),'--','LineWidth',3)
+            xlabel("force");
+            ylabel("Ek");
+        end
+        
+        function readFlowR(obj)
+            [obj.flow, obj.flow_rate] = obj.fileReader.readFlowR();
+            obj.flowStd = std(obj.flow);
+        end
+        
+        function plotFlow(obj)
+            figure(1); box on;
+%             gcf.Position(3:4)=[550,100];
+            set(gcf,'color','w');
+            set(gcf,'position',[100,100,500,100])
+            hasFlow = obj.flow > 0;
+            hasFlow = int8(hasFlow)';
+            h = heatmap(hasFlow)
+            grid(h, 'off')
+%             histogram(hasFlow)
+            Ax = gca;
+            Ax.XDisplayLabels = nan(size(Ax.XDisplayData));
+            Ax.YDisplayLabels = nan(size(Ax.YDisplayData));
         end
         
         function readMDdata(obj)
@@ -58,18 +89,24 @@ classdef Trial_hopper < Trial_DPM
             x_pos = obj.fileReader.coordinate(start_point:end_point,1);
             y_pos = obj.fileReader.coordinate(start_point:end_point,2);
             [xcomp,ycomp] = obj.calculator.help_cal_c_pos(x_pos, y_pos);
-            %areas = obj.calculator.cal_area(x_pos, y_pos);
-            smallestR = obj.calculator.calSmallestR(x_pos, y_pos);
+            areas = obj.calculator.cal_area(x_pos, y_pos);
+%             smallestR = obj.calculator.calSmallestR(x_pos, y_pos);
+            longAxis = obj.calculator.calLongAxis(x_pos, y_pos);
             
-%             index = obj.lengthscale(end-1)/2 < xcomp & xcomp < obj.lengthscale(end-1);
-            index = obj.lengthscale(end-1)/4  < xcomp & xcomp < obj.lengthscale(end-1);
+            index = obj.lengthscale(end-1)/2  < xcomp & xcomp < obj.lengthscale(end-1);
+            longAxis = longAxis(index);
+            areas = areas(index);
+            xcomp = xcomp(index);
+            [temp, selected] = maxk(xcomp,4);
             %area_filter = areas > 0;
             %avg_area = mean(areas(index & area_filter),'all');
             %effR = sqrt(avg_area/pi);
             %areas = areas(index & area_filter);
-            Rfilter = smallestR(index);
+            
+%             Rfilter = smallestR(index);
             %effR = mean(sqrt(areas./pi),'all');
-            effR = mean(Rfilter,'all');
+%             effR = mean(Rfilter,'all');
+            effR = mean(areas(selected)/longAxis(selected),'all')/2;
             
         end
         
@@ -92,11 +129,14 @@ classdef Trial_hopper < Trial_DPM
         function plotEk(obj)
             Ek = obj.calculator.cal_Ek();
             figure(15), hold on, box on;
+            set(gcf,'color','w');
             plot(Ek)
             ax = gca;
             %ax.FontSize = 22;
             %ax.XScale = "log";
             ax.YScale = "log";
+            xlabel("time");
+            ylabel("Ek");
         end
         
         function flowRate(obj, mode, varargin)
@@ -124,6 +164,16 @@ classdef Trial_hopper < Trial_DPM
             colormap('jet')
             imagesc(valueMatrix)
             colorbar
+        end
+        
+        function volumnRate(obj)
+            if isempty(obj.calculator.count)
+                obj.calculator.cell_count();
+            end
+            heightWindow = 3;
+            obj.density = obj.calculator.calDensityAtOpening(1, heightWindow);
+            scale = 1/(obj.density{3}(1)* (pi*(0.5^2+0.7^2)/2));
+            obj.flow_rate = obj.flow_rate * scale;
         end
         
     end

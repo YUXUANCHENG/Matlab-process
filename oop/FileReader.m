@@ -13,9 +13,17 @@ classdef FileReader < handle
         cal_A
         phi
         isfData
+        endpoint = 35;
+        interval = 15;
+        flow;
     end
     
     methods
+        function setInterval(obj,endpoint,interval)
+            obj.endpoint = endpoint;
+            obj.interval = interval;
+        end
+        
         function obj = setFolder(obj, basefolder, t_index_i, t_index_j)
             obj.folder = basefolder + int2str(t_index_i) + "_" + int2str(t_index_j) + "/";
             obj.t_index_i = t_index_i;
@@ -31,6 +39,58 @@ classdef FileReader < handle
             catch
                 disp('no v0');
             end
+        end
+        
+        function [flow1, flow_rate] = readFlowR(obj)
+            obj.flow = csvread(obj.folder + "flowRate.txt");
+            flow1 = obj.flow;
+            limit = obj.endpoint;
+%             limit = 19;
+%             limit = 38;
+%              limit = 59;
+            if size(obj.flow,1) > limit
+%                 flow = flow(limit + 1:end);
+                 flow = obj.flow(limit - obj.interval:limit + 1);
+%                 flow = flow(limit - 45:limit + 1);
+%                 flow = flow(limit - 20:limit + 1);
+%                  flow = flow(limit - 10:limit + 1);
+%                 flow = flow(limit+1:end);
+                flow_rate = 10*mean(flow,'all');
+                   
+            else
+                flow = obj.flow(end);
+                flow_rate = -1;
+            end
+            plotF = 0;
+            if (plotF)
+            figure(5); hold on;
+            set(gcf,'color','w');
+%             edges = linspace(0, 0.04, 40);
+%             h1=histogram(10*flow, 'BinEdges', edges);
+%             h1.BinWidth = 0.005;
+%             h1.BinCount = 10;
+            interval = csvread(obj.folder + "flowInterval.txt");
+%             interval = interval(floor(size(interval,1)/2):end);
+            interval = interval(30:end);
+            edges = linspace(0, 9000, 18);
+%              [~,edges] = histcounts(log10(interval));
+            h1=histogram(interval, 'BinEdges', edges, 'Normalization','probability');
+            height = h1.Values;
+%             h1=histogram(interval, 'BinEdges', 10.^edges, 'Normalization','probability');
+            set(gca,'YScale','log');           
+%              set(gca, 'xscale','log');
+            figure(6); hold on; box on;
+            set(gcf,'color','w');
+            plot(edges(1:end-1),height)
+            set(gca,'YScale','log');  
+            set(gca,'FontSize',15)
+            xlabel('$\delta t$','Interpreter','latex');
+            ylabel("$P$",'Interpreter','latex');
+            end
+        end
+        
+        function friction = readFriction(obj)
+            friction = csvread(obj.folder + "flowRate.txt");
         end
         
         function readInitial(obj)
@@ -66,12 +126,12 @@ classdef FileReader < handle
             catch
                 disp('no calA file')
             end
-            try
-                contact_file = obj.folder + "contact" + extend1;
-                contact = dlmread(contact_file);
-            catch
-                disp('no contact file')
-            end
+%             try
+%                 contact_file = obj.folder + "contact" + extend1;
+%                 contact = dlmread(contact_file);
+%             catch
+%                 disp('no contact file')
+%             end
             v_file = obj.folder + "v" + extend1;
             obj.vel = csvread(v_file);
         end
