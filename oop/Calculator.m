@@ -6,6 +6,7 @@ classdef Calculator < handle
         trial
         x_comp
         y_comp
+        x_v
     end
     
     methods

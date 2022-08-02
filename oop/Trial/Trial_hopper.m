@@ -153,6 +153,13 @@ classdef Trial_hopper < Trial_DPM
             obj.density = obj.calculator.calDensity(timeWindow, heightWindow);
         end
         
+        function calVdistribution(obj,timeWindow, heightWindow)
+            if isempty(obj.calculator.count)
+                obj.calculator.cell_count();
+            end
+            obj.vDistribution = obj.calculator.calVdistribution(timeWindow, heightWindow);
+        end
+        
         function plotDensity(obj)
             figure(13), hold on, box on;
             valueMatrix = obj.density{3};

@@ -168,7 +168,9 @@ classdef CLI_DPM < handle
             ax = gca;
             ax.XScale = "log";
             ax.YScale = "log";
-            xlabel('1/T');ylabel('tao * sqrt(T)');
+            xlabel('1/T');
+%             ylabel('tao * sqrt(T)');
+            ylabel('tao');
         end
         
         function Angell(obj,mode)
